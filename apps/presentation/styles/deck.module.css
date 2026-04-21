@@ -1,0 +1,474 @@
+.eyebrow {
+  margin: 0 0 1rem;
+  color: var(--accent);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  max-width: 12ch;
+  margin: 0;
+  font-size: clamp(3.6rem, 8vw, 6.8rem);
+  line-height: 0.92;
+  text-wrap: balance;
+}
+
+.heroBody {
+  max-width: 19ch;
+  margin: 1.5rem 0 0;
+  color: var(--muted);
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
+  line-height: 1.45;
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin-top: 2rem;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", "SFMono-Regular", "Menlo", monospace;
+  font-size: 0.9rem;
+}
+
+.sectionTitle {
+  max-width: 16ch;
+  margin: 0 0 1.5rem;
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.card {
+  min-height: 17rem;
+  padding: 1.4rem;
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  background: linear-gradient(180deg, rgba(13, 25, 51, 0.88), rgba(8, 13, 28, 0.72));
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
+}
+
+.card h3 {
+  margin: 0 0 0.8rem;
+  font-size: 1.2rem;
+}
+
+.card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.codeBlock {
+  width: min(100%, 56rem);
+  margin: 0;
+  padding: 1.5rem;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.5rem;
+  background: rgba(5, 8, 19, 0.92);
+  color: #f6f4ef;
+  font-family: "IBM Plex Mono", "SFMono-Regular", "Menlo", monospace;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.caption {
+  max-width: 34rem;
+  margin-top: 1rem;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.magicMoveLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(18rem, 0.72fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.magicMoveHero {
+  display: grid;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.magicMoveSectionHero {
+  padding-right: 1.25rem;
+}
+
+.magicMoveSectionAnalysis {
+  padding-right: 0.5rem;
+}
+
+.magicMoveHeroBody {
+  max-width: 42rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.15rem;
+  line-height: 1.5;
+}
+
+.magicMoveHeroCaption {
+  max-width: 54rem;
+  margin: 0;
+  color: #f9f3ea;
+  font-size: 1.08rem;
+  line-height: 1.45;
+}
+
+.magicMoveFrame {
+  width: 100%;
+  min-width: 0;
+  padding: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.5rem;
+  background:
+    linear-gradient(180deg, rgba(18, 27, 46, 0.96), rgba(8, 14, 26, 0.94));
+  box-shadow: 0 22px 80px rgba(0, 0, 0, 0.28);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.magicMoveFrame::-webkit-scrollbar {
+  display: none;
+}
+
+.magicMoveFrameHero {
+  max-width: min(100%, 76rem);
+}
+
+.magicMoveFrameAnalysis {
+  max-width: min(100%, 54rem);
+}
+
+.magicMoveFrame pre {
+  width: max-content;
+  min-width: 100%;
+  margin: 0;
+  font-size: clamp(0.66rem, 1vw, 0.98rem);
+  line-height: 1.28;
+}
+
+.magicMoveFrameHero pre {
+  font-size: clamp(0.72rem, 1.15vw, 1.03rem);
+}
+
+.magicMoveFrameAnalysis pre {
+  font-size: clamp(0.6rem, 0.82vw, 0.82rem);
+}
+
+.magicMoveFrame :where(code, span, br, .shiki-magic-move-item) {
+  line-height: inherit;
+}
+
+.magicMovePlaceholder {
+  width: 100%;
+  min-height: 18rem;
+}
+
+.magicMoveNotes {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  min-width: 0;
+}
+
+.magicMoveLabel {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.magicMoveMessage {
+  margin: 0;
+  color: #f9f3ea;
+  font-size: 1.15rem;
+  line-height: 1.5;
+}
+
+.magicMoveAnalysisBody {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.magicMoveAnalysisTitle {
+  max-width: 11ch;
+  font-size: clamp(2.6rem, 4.8vw, 4rem);
+}
+
+.magicMoveChecklist {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.magicMoveChecklist li {
+  padding: 0.95rem 1rem;
+  border-left: 3px solid rgba(242, 166, 90, 0.6);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.codeStepFragment {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tsSlideLayout {
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.75fr) minmax(0, 1.25fr);
+  gap: 1.75rem;
+  align-items: start;
+}
+
+.tsAnalysisLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.72fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.tsSlideCopy {
+  display: grid;
+  gap: 0.55rem;
+  align-content: start;
+  min-width: 0;
+}
+
+.tsAnalysisCopy {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.tsSlideHeader {
+  display: grid;
+  gap: 0.45rem;
+  max-width: 22rem;
+}
+
+.tsStateRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.tsStateChip {
+  padding: 0.28rem 0.52rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--foreground);
+  font-size: 0.66rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.tsStateChipActive {
+  border-color: rgba(242, 166, 90, 0.72);
+  background: rgba(242, 166, 90, 0.18);
+}
+
+.tsMeta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.66rem;
+  line-height: 1.28;
+}
+
+.tsEditorFrame {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.8rem;
+  background:
+    linear-gradient(180deg, rgba(18, 27, 46, 0.96), rgba(8, 14, 26, 0.94));
+  box-shadow: 0 22px 80px rgba(0, 0, 0, 0.24);
+  align-self: start;
+}
+
+.tsEditorFrameHero {
+  max-width: 100%;
+}
+
+.tsEditorFrameAnalysis {
+  max-width: min(100%, 42rem);
+}
+
+.tsEditorFrame :global(.monaco-editor),
+.tsEditorFrame :global(.monaco-editor-background),
+.tsEditorFrame :global(.margin) {
+  border-radius: 0.55rem;
+}
+
+.tsEditorFrame :global(.monaco-editor .monaco-hover) {
+  max-width: 26rem;
+  border-radius: 0.55rem;
+}
+
+.tsEditorFrame :global(.monaco-editor .monaco-hover .hover-row),
+.tsEditorFrame :global(.monaco-editor .monaco-hover .markdown-hover) {
+  font-size: 0.82rem;
+  line-height: 1.3;
+}
+
+.tsEditorFrame :global(.monaco-editor .monaco-hover-content) {
+  padding: 0.25rem 0.35rem;
+}
+
+.tsTitle {
+  max-width: 10ch;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 0.96;
+  margin-bottom: 0.35rem;
+}
+
+.tsTitleAnalysis {
+  max-width: 10ch;
+  font-size: clamp(2rem, 4vw, 3.1rem);
+  line-height: 0.96;
+  margin: 0;
+}
+
+.tsAnalysisList {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tsAnalysisList li {
+  padding: 0.9rem 1rem;
+  border-left: 3px solid rgba(242, 166, 90, 0.6);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.42;
+}
+
+.checklist {
+  display: grid;
+  gap: 1rem;
+  max-width: 42rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checklist li {
+  padding: 1rem 1.2rem;
+  border-left: 3px solid var(--accent);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fbf8f2;
+  font-size: 1.2rem;
+  line-height: 1.4;
+}
+
+.timeline {
+  display: grid;
+  gap: 1rem;
+  max-width: 52rem;
+}
+
+.timeline > div {
+  display: grid;
+  grid-template-columns: 5rem 1fr;
+  gap: 1rem;
+  align-items: start;
+  padding: 1rem 1.25rem;
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.timeline p {
+  margin: 0;
+  color: #f6f1e8;
+  font-size: 1.1rem;
+  line-height: 1.45;
+}
+
+.timelineStep {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f2a65a, #ff6d4d);
+  color: #1e0d04;
+  font-family: "IBM Plex Mono", "SFMono-Regular", "Menlo", monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+@media (max-width: 960px) {
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    min-height: 0;
+  }
+
+  .magicMoveLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .magicMoveFrameAnalysis {
+    max-width: 100%;
+  }
+
+  .tsSlideLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .tsAnalysisLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .tsSlideHeader {
+    max-width: 100%;
+  }
+
+  .tsEditorFrameAnalysis {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .timeline > div {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,70 @@
+:root {
+  --background: #07111f;
+  --foreground: #f9f3ea;
+  --muted: rgba(249, 243, 234, 0.72);
+  --accent: #f2a65a;
+  --border: rgba(255, 255, 255, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(circle at top left, rgba(242, 166, 90, 0.16), transparent 30%),
+    radial-gradient(circle at top right, rgba(78, 154, 241, 0.18), transparent 34%),
+    linear-gradient(180deg, #0b1528 0%, #07111f 48%, #050914 100%);
+  color: var(--foreground);
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+.reveal {
+  min-height: 100vh;
+}
+
+.reveal .slides {
+  text-align: left;
+}
+
+.reveal .slides section {
+  padding: 1.5rem;
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3 {
+  color: var(--foreground);
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-transform: none;
+}
+
+.reveal p,
+.reveal li {
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+.reveal a {
+  color: #8dc4ff;
+}
+
+.reveal .progress {
+  color: var(--accent);
+}
+
+.reveal .slide-number {
+  right: 1rem;
+  bottom: 1rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(7, 17, 31, 0.78);
+  color: var(--foreground);
+}
