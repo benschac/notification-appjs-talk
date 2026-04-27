@@ -5,6 +5,7 @@ import "reveal.js/theme/black.css";
 import "shiki-magic-move/style.css";
 
 import "../styles/global.css";
+import { TRPCReactProvider } from "../trpc/client";
 
 export const metadata: Metadata = {
   title: "Presentation",
@@ -18,7 +19,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <TRPCReactProvider>{children}</TRPCReactProvider>
+      </body>
     </html>
   );
 }

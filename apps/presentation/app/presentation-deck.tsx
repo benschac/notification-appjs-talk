@@ -142,7 +142,7 @@ return <PresentationDeck snapshot={snapshot} />;`}</code>
             <li>Full-screen keyboard-driven slides with speaker notes support</li>
             <li>Room for charts, demos, and live backend-backed moments</li>
             <li>A clean app boundary inside `apps/presentation`</li>
-            <li>A predictable local URL on port `3001`</li>
+            <li>A predictable local URL on port `305`</li>
           </ul>
           <aside className="notes">
             Mention that this can grow into API-driven demos without changing
