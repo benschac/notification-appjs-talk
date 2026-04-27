@@ -6,6 +6,7 @@ This app hosts the talk deck as a Next.js application with `reveal.js`.
 
 - `content/appjs-conf-2026-talk-working-draft.md`
 - `content/notification-system-implementation-order.md`
+- `content/trpc-backend-refactor-plan.md`
 
 ## Run it
 
@@ -13,7 +14,7 @@ This app hosts the talk deck as a Next.js application with `reveal.js`.
 bun --filter presentation dev
 ```
 
-The dev server runs on `http://localhost:3001`.
+The dev server runs on `http://localhost:305`.
 
 ## Why Next.js here?
 

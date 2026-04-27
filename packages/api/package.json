@@ -1,0 +1,39 @@
+{
+  "name": "@repo/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./events": {
+      "types": "./src/events/simple-event-bus.ts",
+      "default": "./src/events/simple-event-bus.ts"
+    },
+    "./notifications": {
+      "types": "./src/services/notifications/index.ts",
+      "default": "./src/services/notifications/index.ts"
+    },
+    "./notifications/push": {
+      "types": "./src/services/notifications/push/index.ts",
+      "default": "./src/services/notifications/push/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@repo/talk": "*",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "*",
+    "typescript": "5.9.2"
+  }
+}
