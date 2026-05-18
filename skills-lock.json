@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "revealjs-presenter": {
+      "source": "jwynia/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/general/document-processing/presentation/revealjs-presenter/SKILL.md",
+      "computedHash": "7dbb7c7a2a8dd9573136377ee614430a9499f1e73489a8be3baf3df6f3a90bc8"
+    }
+  }
+}
