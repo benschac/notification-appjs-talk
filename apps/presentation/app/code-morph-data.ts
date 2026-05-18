@@ -2,45 +2,67 @@ import { cache } from "react";
 import { createHighlighter } from "shiki";
 import { codeToKeyedTokens, createMagicMoveMachine, type KeyedTokensInfo } from "shiki-magic-move/core";
 
-const codeSteps = [
-  `await db.updateGiftStatus(giftId, "picked_up");
-await sendPush(giverId, {
-  title: "Pickup completed",
-  deepLink: "/gifts/" + giftId,
-});
-await sendEmail(giverId, pickupCompletedEmail);
-await insertInboxEntry(giverId, {
-  type: "pickup_completed",
+const directSideEffectSteps = [
+  `await markInterestShown(itemId);`,
+  `await markInterestShown(itemId);
+await sendPush(gifterId, {
+  title: userName + " is interested",
+  deepLink: "/items/" + itemId,
 });`,
-  `await db.updateGiftStatus(giftId, "picked_up");
-await sendPush(giverId, {
-  title: "Pickup completed",
-  deepLink: "/gifts/" + giftId,
+  `await markInterestShown(itemId);
+await sendPush(gifterId, {
+  title: userName + " is interested",
+  deepLink: "/items/" + itemId,
 });
-await sendEmail(giverId, pickupCompletedEmail);
-await insertInboxEntry(giverId, {
-  type: "pickup_completed",
+await sendEmail(gifterId, interestEmail);`,
+  `await markInterestShown(itemId);
+await sendPush(gifterId, {
+  title: userName + " is interested",
+  deepLink: "/items/" + itemId,
 });
-await chatTimeline.addSystemMessage(conversationId, {
-  body: "Pickup completed",
-});`,
-  `await db.updateGiftStatus(giftId, "picked_up");
-await eventBus.emit("pickup.completed", {
-  giftId,
-  giverId,
-  receiverId,
-  giftName,
-  completedAt: new Date().toISOString(),
-  navigationTarget: "/gifts/" + giftId,
+await sendEmail(gifterId, interestEmail);
+await insertInboxEntry(gifterId, {
+  type: "item_interest_first_shown",
 });`,
 ];
 
-export const getCodeMorphSteps = cache(async (): Promise<KeyedTokensInfo[]> => {
-  const highlighter = await createHighlighter({
-    themes: ["github-dark"],
-    langs: ["ts"],
-  });
+const codeSteps = [
+  directSideEffectSteps[3],
+  `await markInterestShown(itemId);
+await sendPush(gifterId, {
+  title: userName + " is interested",
+  deepLink: "/items/" + itemId,
+});
+await sendEmail(gifterId, interestEmail);
+await insertInboxEntry(gifterId, {
+  type: "item_interest_first_shown",
+});
+await trackAnalytics("item_interest_first_shown", {
+  itemId,
+  gifterId,
+});`,
+  `await markInterestShown(itemId);
+await eventBus.emit(EVENTS.ITEM_INTEREST.FIRST_SHOWN, {
+  userId,
+  userName: interestedUser.name || "there",
+  gifterId,
+  giftId,
+  giftTitle,
+  itemId,
+  itemTitle,
+  shownAt: eventTimestamp,
+});`,
+];
 
+type TalkCodeSteps = {
+  codeMorphSteps: KeyedTokensInfo[];
+  directSideEffectSteps: KeyedTokensInfo[];
+};
+
+function compileCodeSteps(
+  highlighter: Awaited<ReturnType<typeof createHighlighter>>,
+  steps: string[],
+) {
   const machine = createMagicMoveMachine((code) =>
     codeToKeyedTokens(
       highlighter,
@@ -53,5 +75,17 @@ export const getCodeMorphSteps = cache(async (): Promise<KeyedTokensInfo[]> => {
     ),
   );
 
-  return codeSteps.map((code) => machine.commit(code).current);
+  return steps.map((code) => machine.commit(code).current);
+}
+
+export const getTalkCodeSteps = cache(async (): Promise<TalkCodeSteps> => {
+  const highlighter = await createHighlighter({
+    themes: ["github-dark"],
+    langs: ["ts"],
+  });
+
+  return {
+    codeMorphSteps: compileCodeSteps(highlighter, codeSteps),
+    directSideEffectSteps: compileCodeSteps(highlighter, directSideEffectSteps),
+  };
 });

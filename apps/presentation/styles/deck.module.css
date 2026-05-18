@@ -8,7 +8,7 @@
 }
 
 .heroTitle {
-  max-width: 12ch;
+  max-width: 13ch;
   margin: 0;
   font-size: clamp(3.6rem, 8vw, 6.8rem);
   line-height: 0.92;
@@ -83,12 +83,135 @@
   line-height: 1.6;
 }
 
+.compactCodeBlock {
+  width: min(100%, 58rem);
+  margin: 1rem 0 0;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1rem;
+  background: rgba(5, 8, 19, 0.92);
+  color: #f6f4ef;
+  font-family: "IBM Plex Mono", "SFMono-Regular", "Menlo", monospace;
+  font-size: 0.82rem;
+  line-height: 1.36;
+}
+
 .caption {
   max-width: 34rem;
   margin-top: 1rem;
   color: var(--muted);
   font-size: 1rem;
   line-height: 1.5;
+}
+
+.statement {
+  max-width: 44rem;
+  margin: 1.4rem 0 0;
+  color: #fbf8f2;
+  font-size: clamp(1.5rem, 3vw, 2.35rem);
+  line-height: 1.18;
+  text-wrap: balance;
+}
+
+.flowRow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  width: min(100%, 64rem);
+  margin-top: 1.5rem;
+}
+
+.flowRow span,
+.architectureFlow span,
+.payloadGrid span {
+  min-width: 0;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fbf8f2;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.flowRow span:not(:last-child) {
+  position: relative;
+}
+
+.flowRow span:not(:last-child)::after {
+  content: "->";
+  position: absolute;
+  right: -0.62rem;
+  top: 50%;
+  color: var(--accent);
+  font-family: "IBM Plex Mono", "SFMono-Regular", "Menlo", monospace;
+  font-size: 0.85rem;
+  transform: translateY(-50%);
+}
+
+.bigIdea,
+.bigIdeaAccent {
+  max-width: 14ch;
+  margin: 0;
+  font-size: clamp(3rem, 6.5vw, 6rem);
+  line-height: 0.95;
+  text-wrap: balance;
+}
+
+.bigIdeaAccent {
+  margin-top: 0.5rem;
+  color: var(--accent);
+}
+
+.payloadGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+  width: min(100%, 68rem);
+}
+
+.payloadGrid span {
+  min-height: 5rem;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.architectureFlow {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.55rem;
+  width: min(100%, 78rem);
+  margin-bottom: 1.25rem;
+}
+
+.architectureFlow span {
+  min-height: 6rem;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: 0.92rem;
+}
+
+.sourceList {
+  display: grid;
+  gap: 0.65rem;
+  max-width: 60rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sourceList li {
+  padding: 0.72rem 0.9rem;
+  border-left: 3px solid rgba(242, 166, 90, 0.6);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  font-family: "IBM Plex Mono", "SFMono-Regular", "Menlo", monospace;
+  font-size: 0.86rem;
+  line-height: 1.35;
 }
 
 .magicMoveLayout {
@@ -152,6 +275,11 @@
 
 .magicMoveFrameAnalysis {
   max-width: min(100%, 54rem);
+}
+
+.staticCodeFrame {
+  width: min(100%, 56rem);
+  max-width: min(100%, 56rem);
 }
 
 .magicMoveFrame pre {

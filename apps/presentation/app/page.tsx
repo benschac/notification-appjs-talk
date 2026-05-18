@@ -1,4 +1,4 @@
-import { getCodeMorphSteps } from "./code-morph-data";
+import { getTalkCodeSteps } from "./code-morph-data";
 import { PresentationDeck } from "./presentation-deck";
 
 type TalkSnapshot = {
@@ -15,7 +15,7 @@ async function getTalkSnapshot(): Promise<TalkSnapshot> {
 
 export default async function PresentationPage() {
   const snapshot = await getTalkSnapshot();
-  const codeMorphSteps = await getCodeMorphSteps();
+  const codeSteps = await getTalkCodeSteps();
 
-  return <PresentationDeck codeMorphSteps={codeMorphSteps} snapshot={snapshot} />;
+  return <PresentationDeck {...codeSteps} snapshot={snapshot} />;
 }
