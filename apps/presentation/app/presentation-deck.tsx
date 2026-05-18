@@ -203,11 +203,11 @@ function ProgressiveCodeFrame({
         <div className={styles.progressiveCodeCopy}>
           <p className={styles.eyebrow}>The first version</p>
           <h2 className={styles.sectionTitle}>This code was reasonable</h2>
-          <p className={styles.caption}>
-            It worked until every new surface meant touching the business flow again.
-          </p>
         </div>
-        <div className={`${styles.magicMoveFrame} ${styles.staticCodeFrame}`}>
+        <div
+          data-id="event-bus-code-frame"
+          className={`${styles.magicMoveFrame} ${styles.staticCodeFrame}`}
+        >
           {isMounted ? (
             <ShikiMagicMovePrecompiled
               steps={steps}
@@ -232,6 +232,9 @@ function ProgressiveCodeFrame({
           data-code-step={index + 1}
         />
       ))}
+        <aside className="notes">
+        You start with your business logic. Then you add your notification.Life is good. Problem solved. Then you realize that a bunch of your users don't have notifs on, so you're going to send them an email. But then you realize they might have their emails off, so then you put it in the in-app notifications. Then you realize that in-app notifs are getting really noisy, so you should probably just append this really important message to their chat with the other user. Then you realize you should probably be measuring this in your analytics tool. But also, the rest of your team might want to see this on Slack, so we're going to add a webhook too.
+        </aside>
     </section>
   );
 }
@@ -400,6 +403,19 @@ export function PresentationDeck({
         </aside>
       </section>
 
+      <ProgressiveCodeFrame deck={deck} steps={directSideEffectSteps} />
+
+      <CodeMorphSlide
+        deck={deck}
+        frameDataId="event-bus-code-frame"
+        fragmentSteps={[2]}
+        initialStep={1}
+        layout="hero"
+        showCopy={false}
+        steps={codeMorphSteps}
+        subtitle=""
+        title=""
+      />
 
       <section>
         <p className={styles.eyebrow}>The user moment</p>
@@ -438,19 +454,6 @@ export function PresentationDeck({
           </article>
         </div>
       </section>
-
-      <ProgressiveCodeFrame deck={deck} steps={directSideEffectSteps} />
-
-      <CodeMorphSlide
-        deck={deck}
-        frameDataId="event-bus-code-frame"
-        fragmentSteps={[1]}
-        initialStep={0}
-        layout="hero"
-        steps={codeMorphSteps}
-        subtitle="Start with the version that feels reasonable in a single mutation, then widen it once one more consumer arrives."
-        title="Make the architectural change visible"
-      />
 
       <section data-auto-animate>
         <p className={styles.eyebrow}>Reframe</p>

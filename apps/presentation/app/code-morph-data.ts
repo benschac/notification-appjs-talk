@@ -3,113 +3,157 @@ import { createHighlighter } from "shiki";
 import { codeToKeyedTokens, createMagicMoveMachine, type KeyedTokensInfo } from "shiki-magic-move/core";
 
 const directSideEffectSteps = [
-  `await markInterestShown(itemId);`,
-  `await markInterestShown(itemId);
-await sendPush(gifterId, {
-  title: userName + " is interested",
+  `await bidOnItem(itemId, amount);`,
+  `await bidOnItem(itemId, amount);
+await sendPush(sellerId, {
+  title: bidderName + " bid on your item",
   deepLink: "/items/" + itemId,
 });`,
-  `await markInterestShown(itemId);
-await sendPush(gifterId, {
-  title: userName + " is interested",
+  `await bidOnItem(itemId, amount);
+await sendPush(sellerId, {
+  title: bidderName + " bid on your item",
   deepLink: "/items/" + itemId,
 });
-await sendEmail(gifterId, interestEmail);`,
-  `await markInterestShown(itemId);
-await sendPush(gifterId, {
-  title: userName + " is interested",
+await sendEmail(sellerId, bidEmail);`,
+  `await bidOnItem(itemId, amount);
+await sendPush(sellerId, {
+  title: bidderName + " bid on your item",
   deepLink: "/items/" + itemId,
 });
-await sendEmail(gifterId, interestEmail);
-await insertInboxEntry(gifterId, {
-  type: "item_interest_first_shown",
+await sendEmail(sellerId, bidEmail);
+await insertInboxEntry(sellerId, {
+  type: "item_bid_received",
 });`,
-  `await markInterestShown(itemId);
-await sendPush(gifterId, {
-  title: userName + " is interested",
+  `await bidOnItem(itemId, amount);
+await sendPush(sellerId, {
+  title: bidderName + " bid on your item",
   deepLink: "/items/" + itemId,
 });
-await sendEmail(gifterId, interestEmail);
-await insertInboxEntry(gifterId, {
-  type: "item_interest_first_shown",
+await sendEmail(sellerId, bidEmail);
+await insertInboxEntry(sellerId, {
+  type: "item_bid_received",
 });
-await mirrorInterestToChat(conversationId, {
+await mirrorBidToChat(conversationId, {
   itemId,
-  userName,
+  bidderName,
+  amount,
 });`,
-  `await markInterestShown(itemId);
-await sendPush(gifterId, {
-  title: userName + " is interested",
+  `await bidOnItem(itemId, amount);
+await sendPush(sellerId, {
+  title: bidderName + " bid on your item",
   deepLink: "/items/" + itemId,
 });
-await sendEmail(gifterId, interestEmail);
-await insertInboxEntry(gifterId, {
-  type: "item_interest_first_shown",
+await sendEmail(sellerId, bidEmail);
+await insertInboxEntry(sellerId, {
+  type: "item_bid_received",
 });
-await mirrorInterestToChat(conversationId, {
+await mirrorBidToChat(conversationId, {
   itemId,
-  userName,
+  bidderName,
+  amount,
 });
-await sendWebhook("item.interest_shown", {
+posthog.capture("item_bid_received", {
+  distinctId: sellerId,
   itemId,
-  gifterId,
+  amount,
 });`,
-  `await markInterestShown(itemId);
-await sendPush(gifterId, {
-  title: userName + " is interested",
+  `await bidOnItem(itemId, amount);
+await sendPush(sellerId, {
+  title: bidderName + " bid on your item",
   deepLink: "/items/" + itemId,
 });
-await sendEmail(gifterId, interestEmail);
-await insertInboxEntry(gifterId, {
-  type: "item_interest_first_shown",
+await sendEmail(sellerId, bidEmail);
+await insertInboxEntry(sellerId, {
+  type: "item_bid_received",
 });
-await mirrorInterestToChat(conversationId, {
+await mirrorBidToChat(conversationId, {
   itemId,
-  userName,
+  bidderName,
+  amount,
 });
-await sendWebhook("item.interest_shown", {
+posthog.capture("item_bid_received", {
+  distinctId: sellerId,
   itemId,
-  gifterId,
+  amount,
 });
-await publishLiveEvent("item.interest_shown", {
+await sendSlackWebhook("#sales", {
+  text: bidderName + " bid on " + itemTitle,
+});`,
+  `await bidOnItem(itemId, amount);
+await sendPush(sellerId, {
+  title: bidderName + " bid on your item",
+  deepLink: "/items/" + itemId,
+});
+await sendEmail(sellerId, bidEmail);
+await insertInboxEntry(sellerId, {
+  type: "item_bid_received",
+});
+await mirrorBidToChat(conversationId, {
   itemId,
-  gifterId,
+  bidderName,
+  amount,
+});
+posthog.capture("item_bid_received", {
+  distinctId: sellerId,
+  itemId,
+  amount,
+});
+await sendSlackWebhook("#sales", {
+  text: bidderName + " bid on " + itemTitle,
+});
+await sendWebhook("item.bid_received", {
+  itemId,
+  sellerId,
+  amount,
+});`,
+  `await bidOnItem(itemId, amount);
+await sendPush(sellerId, {
+  title: bidderName + " bid on your item",
+  deepLink: "/items/" + itemId,
+});
+await sendEmail(sellerId, bidEmail);
+await insertInboxEntry(sellerId, {
+  type: "item_bid_received",
+});
+await mirrorBidToChat(conversationId, {
+  itemId,
+  bidderName,
+  amount,
+});
+posthog.capture("item_bid_received", {
+  distinctId: sellerId,
+  itemId,
+  amount,
+});
+await sendSlackWebhook("#sales", {
+  text: bidderName + " bid on " + itemTitle,
+});
+await sendWebhook("item.bid_received", {
+  itemId,
+  sellerId,
+  amount,
+});
+await publishLiveEvent("item.bid_received", {
+  itemId,
+  sellerId,
+  amount,
 });`,
 ];
 
 const codeSteps = [
   directSideEffectSteps[6],
-  `await markInterestShown(itemId);
-await sendPush(gifterId, {
-  title: userName + " is interested",
-  deepLink: "/items/" + itemId,
-});
-await sendEmail(gifterId, interestEmail);
-await insertInboxEntry(gifterId, {
-  type: "item_interest_first_shown",
-});
-await mirrorInterestToChat(conversationId, {
-  itemId,
-  userName,
-});
-await sendWebhook("item.interest_shown", {
-  itemId,
-  gifterId,
-});
-await publishLiveEvent("item.interest_shown", {
-  itemId,
-  gifterId,
-});`,
-  `await markInterestShown(itemId);
-await eventBus.emit(EVENTS.ITEM_INTEREST.FIRST_SHOWN, {
-  userId,
-  userName: interestedUser.name || "there",
-  gifterId,
+  directSideEffectSteps[8],
+  `await bidOnItem(itemId, amount);
+await eventBus.emit(EVENTS.ITEM.BID_RECEIVED, {
+  bidderId,
+  bidderName: bidder.name || "someone",
+  sellerId,
   giftId,
   giftTitle,
   itemId,
   itemTitle,
-  shownAt: eventTimestamp,
+  amount,
+  bidAt: eventTimestamp,
 });`,
 ];
 

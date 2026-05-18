@@ -413,11 +413,29 @@
   max-width: min(100%, 54rem);
 }
 
+.magicMoveSectionCodeOnly {
+  display: grid !important;
+  place-items: center;
+  min-height: 100%;
+}
+
+.magicMoveSectionCodeOnly .magicMoveFrame {
+  width: min(100%, 62rem);
+  height: min(68vh, 42rem);
+  overflow: auto;
+}
+
+.magicMoveSectionCodeOnly .magicMoveFrame pre {
+  font-size: clamp(0.48rem, 0.72vw, 0.72rem);
+  line-height: 1.2;
+}
+
 .progressiveCodeLayout {
   display: grid;
   grid-template-columns: minmax(0, 0.48fr) minmax(0, 0.52fr);
   gap: 2rem;
   align-items: center;
+  min-height: min(66vh, 42rem);
 }
 
 .progressiveCodeCopy {
@@ -427,13 +445,13 @@
 .staticCodeFrame {
   width: 100%;
   max-width: 100%;
-  max-height: min(64vh, 38rem);
+  height: min(62vh, 38rem);
   overflow: auto;
 }
 
 .staticCodeFrame pre {
-  font-size: clamp(0.48rem, 0.78vw, 0.78rem);
-  line-height: 1.22;
+  font-size: clamp(0.42rem, 0.66vw, 0.68rem);
+  line-height: 1.18;
 }
 
 .magicMoveFrame pre {

@@ -28,6 +28,7 @@ export function CodeMorphSlide({
   fragmentSteps = [],
   initialStep,
   layout,
+  showCopy = true,
   steps,
   subtitle,
   title,
@@ -37,6 +38,7 @@ export function CodeMorphSlide({
   fragmentSteps?: number[];
   initialStep: number;
   layout: "hero" | "analysis";
+  showCopy?: boolean;
   steps: KeyedTokensInfo[];
   subtitle: string;
   title: string;
@@ -120,6 +122,33 @@ export function CodeMorphSlide({
       )}
     </div>
   );
+
+  if (!showCopy) {
+    return (
+      <section
+        ref={sectionRef}
+        className={styles.magicMoveSectionCodeOnly}
+        data-auto-animate
+        data-auto-animate-duration="0.7"
+        data-auto-animate-easing="cubic-bezier(0.22, 1, 0.36, 1)"
+        data-auto-animate-id="event-bus-code-journey"
+      >
+        {frame}
+        {fragmentSteps.map((fragmentStep) => (
+          <span
+            key={fragmentStep}
+            aria-hidden="true"
+            className={`fragment custom ${styles.codeStepFragment}`}
+            data-code-step={fragmentStep}
+          />
+        ))}
+        <aside className="notes">
+          Let the code carry the transition from scattered side effects into a
+          single event boundary.
+        </aside>
+      </section>
+    );
+  }
 
   return (
     <section
