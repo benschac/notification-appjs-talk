@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Reveal from "reveal.js";
 import Notes from "reveal.js/plugin/notes";
 import { ShikiMagicMovePrecompiled } from "shiki-magic-move/react";
+import type { RevealConfig } from "reveal.js";
 import type { KeyedTokensInfo } from "shiki-magic-move/core";
 
 import { CodeMorphSlide } from "./code-morph-slide";
@@ -20,8 +21,23 @@ type RevealEvent = {
 };
 
 type RevealDeck = {
+  destroy: () => void;
   off: (eventName: string, callback: (event: RevealEvent) => void) => void;
   on: (eventName: string, callback: (event: RevealEvent) => void) => void;
+};
+
+type MermaidRevealConfig = RevealConfig & {
+  mermaid?: {
+    securityLevel?: "strict" | "loose" | "antiscript" | "sandbox";
+    startOnLoad?: boolean;
+    theme?: "base" | "dark" | "default" | "forest" | "neutral" | "null";
+    themeVariables?: Record<string, string | boolean | number>;
+  };
+  mermaidPlugin?: {
+    afterRender?: (element: Element) => void;
+    beforeRender?: (element: Element) => boolean | void;
+    iconPacks?: unknown[];
+  };
 };
 
 function ProgressiveCodeFrame({
@@ -139,23 +155,61 @@ export function PresentationDeck({
       return;
     }
 
-    const deck = new Reveal(deckRef.current, {
-      controlsLayout: "edges",
-      hash: true,
-      plugins: [Notes],
-      progress: true,
-      slideNumber: "c/t",
-      transition: "fade",
-      viewDistance: 3,
-    });
+    let isCancelled = false;
+    let activeDeck: RevealDeck | null = null;
 
-    void deck.initialize().then(() => {
+    const initializeDeck = async () => {
+      const { default: RevealMermaid } = await import(
+        "reveal.js-mermaid-plugin/plugin/mermaid/mermaid.esm.js"
+      );
+
+      if (isCancelled || !deckRef.current) {
+        return;
+      }
+
+      const revealConfig: MermaidRevealConfig = {
+        controlsLayout: "edges",
+        hash: true,
+        mermaid: {
+          securityLevel: "strict",
+          startOnLoad: false,
+          theme: "dark",
+          themeVariables: {
+            darkMode: true,
+            fontFamily: "IBM Plex Mono, SFMono-Regular, Menlo, monospace",
+            lineColor: "#f2a65a",
+            primaryColor: "#1b2a45",
+            primaryTextColor: "#fbf8f2",
+            tertiaryColor: "#0d1933",
+          },
+        },
+        mermaidPlugin: {},
+        plugins: [Notes, RevealMermaid],
+        progress: true,
+        slideNumber: "c/t",
+        transition: "fade",
+        viewDistance: 3,
+      };
+
+      const deck = new Reveal(deckRef.current, revealConfig);
+
+      activeDeck = deck;
+      await deck.initialize();
+
+      if (isCancelled) {
+        deck.destroy();
+        return;
+      }
+
       setDeck(deck);
-    });
+    };
+
+    void initializeDeck();
 
     return () => {
+      isCancelled = true;
       setDeck(null);
-      deck.destroy();
+      activeDeck?.destroy();
     };
   }, []);
 
@@ -274,13 +328,14 @@ export function PresentationDeck({
         <section>
           <p className={styles.eyebrow}>System shape</p>
           <h2 className={styles.sectionTitle}>One event, many surfaces</h2>
-          <div className={styles.architectureFlow}>
-            <span>Product action</span>
-            <span>Provider-free event</span>
-            <span>Zod-validated bus</span>
-            <span>Handler / template</span>
-            <span>Unified service</span>
-            <span>Mobile tap path</span>
+          <div className={`mermaid ${styles.mermaidDiagram}`}>
+            <pre>{`flowchart LR
+  action[Product action] --> event[Provider-free event]
+  event --> bus[Zod-validated bus]
+  bus --> push[Push]
+  bus --> email[Email]
+  bus --> inbox[Inbox]
+  bus --> tap[Mobile tap path]`}</pre>
           </div>
           <pre className={styles.codeBlock}>
             <code>{`eventBus.emit(DOMAIN_EVENTS.[HERO_EVENT], payload);`}</code>
