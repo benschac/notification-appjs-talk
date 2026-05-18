@@ -269,9 +269,11 @@ Animation beats:
 1. database mutation
 2. add push
 3. add email
-4. add inbox
-5. add chat mirror / reminder / lifecycle state
-6. collapse into one domain event
+4. add in-app notification channel / inbox
+5. add chat mirror
+6. add webhook
+7. maybe add live event / live activity update
+8. collapse into one domain event
 
 Core line:
 

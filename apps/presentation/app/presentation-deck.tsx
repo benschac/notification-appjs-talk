@@ -1,6 +1,7 @@
 "use client";
 
 import { Deck } from "@revealjs/react";
+import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Notes from "reveal.js/plugin/notes";
 import { ShikiMagicMovePrecompiled } from "shiki-magic-move/react";
@@ -8,6 +9,13 @@ import type { RevealApi, RevealConfig, RevealPlugin, RevealPluginFactory } from 
 import type { KeyedTokensInfo } from "shiki-magic-move/core";
 
 import { CodeMorphSlide } from "./code-morph-slide";
+import {
+  createRevealAnythingPlugin,
+  type AnythingRevealConfig,
+} from "./reveal-anything-plugin";
+import headshotImage from "./headshot.jpeg";
+import notificationIllustration from "./notif_illistration.png";
+import treasureBagImage from "./Longarms.png";
 import styles from "../styles/deck.module.css";
 
 type TalkSnapshot = {
@@ -25,7 +33,8 @@ type RevealDeck = {
   on: (eventName: string, callback: (event: RevealEvent) => void) => void;
 };
 
-type MermaidRevealConfig = RevealConfig & {
+type MermaidRevealConfig = RevealConfig &
+  AnythingRevealConfig & {
   mermaid?: {
     securityLevel?: "strict" | "loose" | "antiscript" | "sandbox";
     startOnLoad?: boolean;
@@ -40,6 +49,90 @@ type MermaidRevealConfig = RevealConfig & {
 };
 
 type DeckPlugin = RevealPlugin | RevealPluginFactory;
+
+function initializeExternalDocFrame(element: HTMLElement) {
+  const existingIframe = element.querySelector("iframe");
+
+  if (existingIframe) {
+    return;
+  }
+
+  const rawConfig = element.innerHTML.trim().match(/<!--([\s\S]*?)-->/)?.[1] ?? "{}";
+  let options: Record<string, unknown> = {};
+
+  try {
+    options = JSON.parse(rawConfig);
+  } catch {
+    options = {};
+  }
+
+  const src =
+    typeof options.src === "string" ? options.src : "https://revealjs.com/react/";
+  const title =
+    typeof options.title === "string" ? options.title : "External reference";
+  const allow = typeof options.allow === "string" ? options.allow : "fullscreen";
+
+  const header = document.createElement("div");
+  header.className = styles.externalDocHeader;
+
+  const label = document.createElement("span");
+  label.textContent = title;
+  header.append(label);
+
+  const link = document.createElement("a");
+  link.href = src;
+  link.rel = "noreferrer";
+  link.target = "_blank";
+  link.textContent = "Open";
+  header.append(link);
+
+  const iframe = document.createElement("iframe");
+  iframe.allow = allow;
+  iframe.className = styles.externalDocIframe;
+  iframe.loading = "lazy";
+  iframe.referrerPolicy = "no-referrer";
+  iframe.sandbox.add(
+    "allow-forms",
+    "allow-popups",
+    "allow-popups-to-escape-sandbox",
+    "allow-same-origin",
+    "allow-scripts",
+  );
+  iframe.src = src;
+  iframe.title = title;
+
+  element.replaceChildren(header, iframe);
+}
+
+function ExternalDocFrame({
+  className,
+  src,
+  title,
+}: {
+  className?: string;
+  src: string;
+  title: string;
+}) {
+  return (
+    <div className={`${styles.externalDocFrame} ${className ?? ""}`}>
+      <div className={styles.externalDocHeader}>
+        <span>{title}</span>
+        <a href={src} rel="noreferrer" target="_blank">
+          Open
+        </a>
+      </div>
+      <iframe
+        allow="fullscreen"
+        className={styles.externalDocIframe}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+        sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+        src={src}
+        title={title}
+      />
+    </div>
+  );
+}
 
 function ProgressiveCodeFrame({
   deck,
@@ -106,27 +199,31 @@ function ProgressiveCodeFrame({
 
   return (
     <section ref={sectionRef}>
-      <p className={styles.eyebrow}>The first version</p>
-      <h2 className={styles.sectionTitle}>This code was reasonable</h2>
-      <div className={`${styles.magicMoveFrame} ${styles.staticCodeFrame}`}>
-        {isMounted ? (
-          <ShikiMagicMovePrecompiled
-            steps={steps}
-            step={step}
-            animate
-            options={{
-              duration: 450,
-              lineNumbers: true,
-              stagger: 0.1,
-            }}
-          />
-        ) : (
-          <div className={styles.magicMovePlaceholder} />
-        )}
+      <div className={styles.progressiveCodeLayout}>
+        <div className={styles.progressiveCodeCopy}>
+          <p className={styles.eyebrow}>The first version</p>
+          <h2 className={styles.sectionTitle}>This code was reasonable</h2>
+          <p className={styles.caption}>
+            It worked until every new surface meant touching the business flow again.
+          </p>
+        </div>
+        <div className={`${styles.magicMoveFrame} ${styles.staticCodeFrame}`}>
+          {isMounted ? (
+            <ShikiMagicMovePrecompiled
+              steps={steps}
+              step={step}
+              animate
+              options={{
+                duration: 450,
+                lineNumbers: true,
+                stagger: 0.1,
+              }}
+            />
+          ) : (
+            <div className={styles.magicMovePlaceholder} />
+          )}
+        </div>
       </div>
-      <p className={styles.caption}>
-        It worked until every new surface meant touching the business flow again.
-      </p>
       {steps.slice(1).map((_, index) => (
         <span
           key={index + 1}
@@ -164,7 +261,7 @@ export function PresentationDeck({
         return;
       }
 
-      setPlugins([Notes, RevealMermaid]);
+      setPlugins([Notes, RevealMermaid, createRevealAnythingPlugin()]);
     };
 
     void loadPlugins();
@@ -173,6 +270,19 @@ export function PresentationDeck({
       isCancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    const initializeExternalDocs = () => {
+      for (const element of Array.from(document.getElementsByClassName("external-doc"))) {
+        if (element instanceof HTMLElement) {
+          initializeExternalDocFrame(element);
+        }
+      }
+    };
+
+    initializeExternalDocs();
+    requestAnimationFrame(initializeExternalDocs);
+  }, [plugins]);
 
   const revealConfig = useMemo<MermaidRevealConfig>(
     () => ({
@@ -192,6 +302,20 @@ export function PresentationDeck({
         },
       },
       mermaidPlugin: {},
+      anything: [
+        {
+          className: "external-doc",
+          defaults: {
+            allow: "fullscreen",
+            src: "https://revealjs.com/react/",
+            title: "External reference",
+          },
+          initialize(container, options) {
+            container.innerHTML = `<!-- ${JSON.stringify(options)} -->`;
+            initializeExternalDocFrame(container);
+          },
+        },
+      ],
       progress: true,
       slideNumber: "c/t",
       transition: "fade",
@@ -213,19 +337,69 @@ export function PresentationDeck({
       <section data-auto-animate>
         <p className={styles.eyebrow}>App.js Conf 2026</p>
         <h1 className={styles.heroTitle}>Emit Once, Notify Everywhere</h1>
-        <p className={styles.heroBody}>
-          The event bus was the best investment I made in my React Native app.
-        </p>
-        <div className={styles.metaRow}>
-          <span>Treasure It</span>
-          <span>{backendLabel}</span>
-          <span>{snapshot.generatedAt}</span>
-        </div>
         <aside className="notes">
           Frame this as a production React Native story, not a backend
           architecture lecture.
         </aside>
       </section>
+
+      <section>
+        <div className={styles.introLayout}>
+          <div>
+            <p className={styles.eyebrow}>Intro</p>
+            <h2 className={styles.bigIdea}>Hi, I&apos;m Ben.</h2>
+            <p className={styles.statement}>
+              I&apos;m building Treasure It, a marketplace for P2P hyperlocal commerce
+            </p>
+          </div>
+          <div className={styles.introImages}>
+            <Image
+              alt="Ben"
+              className={styles.introHeadshot}
+              sizes="15rem"
+              src={headshotImage}
+            />
+            <Image
+              alt="Treasure It marketplace exchange illustration"
+              className={styles.introBag}
+              sizes="28rem"
+              src={treasureBagImage}
+            />
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div className={styles.marketplaceNotificationLayout}>
+          <div>
+            <p className={styles.eyebrow}>Marketplace reality</p>
+            <h2 className={styles.bigIdea}>
+              Notifications take center stage.
+            </h2>
+          </div>
+          <Image
+            alt="Marketplace notifications connecting store, calendar, and package activity"
+            className={styles.marketplaceNotificationImage}
+            priority
+            sizes="34rem"
+            src={notificationIllustration}
+          />
+        </div>
+      </section>
+
+      <section>
+        <p className={styles.eyebrow}>The story begins here</p>
+        <ExternalDocFrame
+          className={styles.storyDocFrame}
+          src="https://docs.expo.dev/versions/latest/sdk/notifications/"
+          title="Expo Notifications docs"
+        />
+        <aside className="notes">
+          Start with the obvious thing: a React Native app needs push notifications.
+          The surprise was that the push API was not the real architecture.
+        </aside>
+      </section>
+
 
       <section>
         <p className={styles.eyebrow}>The user moment</p>
@@ -330,6 +504,24 @@ export function PresentationDeck({
         <pre className={styles.codeBlock}>
           <code>{`eventBus.emit(DOMAIN_EVENTS.[HERO_EVENT], payload);`}</code>
         </pre>
+      </section>
+
+      <section>
+        <p className={styles.eyebrow}>Reference surface</p>
+        <h2 className={styles.sectionTitle}>Pull docs into the room</h2>
+        <div
+          className={`external-doc ${styles.externalDocFrame}`}
+          dangerouslySetInnerHTML={{
+            __html: `<!-- {
+              "src": "https://revealjs.com/react/",
+              "title": "Reveal React docs"
+            } -->`,
+          }}
+        />
+        <p className={styles.caption}>
+          Anything turns this comment-configured placeholder into an iframe,
+          while the slide keeps a direct fallback link.
+        </p>
       </section>
 
       <section>

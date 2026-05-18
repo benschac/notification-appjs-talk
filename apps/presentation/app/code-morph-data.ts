@@ -24,10 +24,6 @@ await sendEmail(gifterId, interestEmail);
 await insertInboxEntry(gifterId, {
   type: "item_interest_first_shown",
 });`,
-];
-
-const codeSteps = [
-  directSideEffectSteps[3],
   `await markInterestShown(itemId);
 await sendPush(gifterId, {
   title: userName + " is interested",
@@ -37,7 +33,70 @@ await sendEmail(gifterId, interestEmail);
 await insertInboxEntry(gifterId, {
   type: "item_interest_first_shown",
 });
-await trackAnalytics("item_interest_first_shown", {
+await mirrorInterestToChat(conversationId, {
+  itemId,
+  userName,
+});`,
+  `await markInterestShown(itemId);
+await sendPush(gifterId, {
+  title: userName + " is interested",
+  deepLink: "/items/" + itemId,
+});
+await sendEmail(gifterId, interestEmail);
+await insertInboxEntry(gifterId, {
+  type: "item_interest_first_shown",
+});
+await mirrorInterestToChat(conversationId, {
+  itemId,
+  userName,
+});
+await sendWebhook("item.interest_shown", {
+  itemId,
+  gifterId,
+});`,
+  `await markInterestShown(itemId);
+await sendPush(gifterId, {
+  title: userName + " is interested",
+  deepLink: "/items/" + itemId,
+});
+await sendEmail(gifterId, interestEmail);
+await insertInboxEntry(gifterId, {
+  type: "item_interest_first_shown",
+});
+await mirrorInterestToChat(conversationId, {
+  itemId,
+  userName,
+});
+await sendWebhook("item.interest_shown", {
+  itemId,
+  gifterId,
+});
+await publishLiveEvent("item.interest_shown", {
+  itemId,
+  gifterId,
+});`,
+];
+
+const codeSteps = [
+  directSideEffectSteps[6],
+  `await markInterestShown(itemId);
+await sendPush(gifterId, {
+  title: userName + " is interested",
+  deepLink: "/items/" + itemId,
+});
+await sendEmail(gifterId, interestEmail);
+await insertInboxEntry(gifterId, {
+  type: "item_interest_first_shown",
+});
+await mirrorInterestToChat(conversationId, {
+  itemId,
+  userName,
+});
+await sendWebhook("item.interest_shown", {
+  itemId,
+  gifterId,
+});
+await publishLiveEvent("item.interest_shown", {
   itemId,
   gifterId,
 });`,
