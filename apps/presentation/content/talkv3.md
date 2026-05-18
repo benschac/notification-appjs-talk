@@ -40,6 +40,8 @@ The audience should leave with this model:
 
 The backend architecture matters because it protects the mobile product moment. A notification is not done when the provider accepts it. It is done when the user taps it and lands in the right place.
 
+Secondary payoff: once product truth flows through typed events, internal product surfaces can subscribe too. Chat mirroring is the clearest example: the same event that drives a notification can also add a system message to the chat timeline, without putting chat-specific writes back into the product service.
+
 ## Stage-Safe Scale Claim
 
 Use this wording in public slides:
@@ -88,6 +90,7 @@ The talk should keep returning to one user-visible sequence:
 - a product event happens
 - the event carries enough truth
 - a notification is sent across the right channels
+- internal product surfaces can mirror the event when useful
 - the user taps it
 - the app opens to the right place
 - inbox, chat, reminder, and delivery state stay consistent
@@ -102,6 +105,9 @@ The App.js-specific argument is that tap routing is part of the architecture. Pu
 - Treat the `80+` scale line as credibility color, not the point. Spend seconds on it, then return to how one more notification no longer spreads across product flows.
 - Show at least one failure mode from the old world: wrong screen, missing inbox entry, skipped chat mirror, provider success with broken product outcome, or tests that need to know too much.
 - Do not replace one coupling example with another. The before/after transition should go from direct product-flow side effects to a provider-free domain event first; only after that should the handler/template layer introduce channel payloads.
+- Treat `unified-notification.service.ts` as implementation proof, not the main character. It is the delivery boundary that makes the architecture credible; the story is still product event -> typed payload -> handler/template -> mobile tap path.
+- Decoupling does not mean the notification service disappears. It means product services stop calling delivery services directly; notification delivery moves behind typed event handlers and templates.
+- Make type safety a main teaching point, not backup trivia: TypeScript catches wrong event payloads while Zod catches invalid runtime emissions.
 - Edit the demo brutally. It should prove three things: the event fired, notification fan-out happened, and the tap landed correctly. Everything else is optional.
 - Keep build-vs-buy generous. The best line is: vendors are useful once your domain event is clear.
 - End with a reusable checklist, not only a slogan.
@@ -194,17 +200,22 @@ Boundary caveat:
 
 This is an EventEmitter-backed, process-local, runtime-validated application boundary. It is not Kafka, not event sourcing, not durable messaging, and not a guaranteed async queue.
 
+Decoupling caveat:
+
+`The notification service still exists. The change is who is allowed to know about it. Product services emit domain events; notification handlers and templates know about notification delivery.`
+
 ### 6. The Bigger Payoff
 
 Notifications are the first expensive subscriber. Once the event exists, future subscribers become small:
 
 ```ts
 eventBus.on('[hero.event]', sendNotifications);
+eventBus.on('[hero.event]', mirrorIntoChatTimeline);
 eventBus.on('[hero.event]', trackAnalytics);
 eventBus.on('[hero.event]', appendAuditLog);
 ```
 
-Use current proof where possible: analytics is already a realistic subscriber pattern. Keep webhook/CRM examples framed as extensions, not claims about current product behavior.
+Use current proof where possible: chat mirroring is the strongest internal-product subscriber because it turns the same domain event into durable chat context. Analytics is also a realistic subscriber pattern. Keep webhook/CRM examples framed as extensions, not claims about current product behavior.
 
 Core line:
 
@@ -290,6 +301,28 @@ Example fields:
 
 Speaker goal: explain that handlers should not rediscover product meaning from scratch.
 
+Contrast:
+
+```ts
+// Too thin: handler has to rediscover product meaning
+recipient.selected: z.object({
+  giftId: z.string(),
+  recipientId: z.string(),
+});
+
+// Better: event carries the truth the handler needs
+recipient.selected: z.object({
+  giftId: z.string(),
+  giftName: z.string(),
+  giverId: z.string(),
+  gifterName: z.string(),
+  recipientId: z.string(),
+  chosenItemsCount: z.number(),
+  interestedItemsCount: z.number(),
+  selectedAt: z.date(),
+});
+```
+
 Teaching example:
 
 ```ts
@@ -309,6 +342,10 @@ Speaker point:
 
 `There is no push provider here. No email provider. No inbox write. No deep link. This service says what happened in the product and stops there.`
 
+Type-safety point:
+
+`The event name chooses the payload type at compile time, and the event bus validates the same payload with Zod at runtime. This is not just a naming convention.`
+
 Tightened line:
 
 `The payload should carry product meaning. Infrastructure lookups are fine; reconstructing what happened is the smell.`
@@ -323,7 +360,7 @@ Animation beats:
 2. Product service emits one provider-free domain event.
 3. Event bus validates the payload with the event's Zod schema.
 4. Domain event registry maps event -> notification type and payload contract.
-5. Handler/template chooses recipient, copy, channels, and destination metadata.
+5. Handler/template chooses recipient, copy, channels, destination metadata, and optional internal mirrors.
 6. Unified service checks preferences and sends or persists each channel.
 7. Fan-out: push, email, inbox ledger, chat mirror when applicable.
 8. Subscriber extension: analytics / audit.
@@ -331,7 +368,7 @@ Animation beats:
 
 Speaker goal: show the full system without making it feel like a platform rewrite.
 
-### Slide 9 — Unified Notification Service
+### Slide 9 — Delivery Boundary
 
 Time: 1.5 min. Visual: handler/template boundary plus simplified service result envelope.
 
@@ -346,14 +383,21 @@ createEventHandler(DOMAIN_EVENTS.ITEM_INTEREST.FIRST_SHOWN, async (payload) => {
 });
 ```
 
-Speaker goal: the product flow emits product truth; the handler/template boundary turns that truth into notification intent; the unified service owns delivery policy and results.
+Speaker goal: the product flow emits product truth; the handler/template boundary turns that truth into notification intent; the unified service proves the boundary by owning delivery policy and results.
+
+Positioning:
+
+`This service is important, but it is not the main character. The main character is the event boundary. The unified service is where delivery mechanics go so product services do not need to know them.`
 
 Points:
 
 - product services never mention providers
 - Zod schemas protect event payloads at runtime
 - TypeScript protects event names and payload shapes at compile time
+- rich event schemas prevent handlers from querying the database to reconstruct product context
 - templates decide channel copy and destination metadata
+- typed event payloads also make internal product subscribers possible, such as chat timeline system messages
+- unified service is the delivery boundary, not the product boundary
 - preference checks
 - channel fan-out
 - batch behavior
@@ -361,6 +405,8 @@ Points:
 - delivery result aggregation
 - ledger writes
 - channel services stay replaceable
+
+Timing note: spend 60-90 seconds here. Do not turn this into a file tour.
 
 Note: do not imply every notification path is only `send()`, and do not present `{ push, email, inbox, deepLink }` as the product-service replacement. That object belongs at the notification boundary after the domain event is already clean.
 
@@ -404,6 +450,7 @@ Left half:
 - handler fired
 - unified notification service result
 - push / email / inbox / chat or ledger result
+- chat mirror if the chosen hero flow includes it
 
 Right half:
 
@@ -432,6 +479,7 @@ Pass/fail criteria:
 - handler/service path is visible or clearly narrated
 - runtime preference/config distinction is clear
 - channel or ledger result is visible or narrated
+- chat mirror is visible or explicitly out of scope for the chosen hero flow
 - push arrives
 - tap opens the intended route
 - fallback routes safely
@@ -505,9 +553,11 @@ For anyone who wants the concrete implementation map:
 - `packages/api/src/services/notifications/event-handlers.ts`
 - `packages/api/src/services/notifications/unified-notification.service.ts`
 - `packages/api/src/services/notifications/notification-templates.ts`
+- `packages/api/src/services/chat/chat-timeline.service.ts`
 - `packages/app/provider/notifications/NotificationProvider.native.tsx`
 - `packages/app/services/notificationNavigation.ts`
 - `packages/app/services/deepLinkHandler.ts`
+- `packages/app/features/chat/state/chat-timeline.ts`
 
 ### Backup B — What This Is Not
 
@@ -537,7 +587,20 @@ Use these if someone asks whether this is only a naming convention:
 - `notification-templates.ts` turns validated domain payloads into channel-specific copy and metadata.
 - `event-handlers.ts` is the subscription layer between product events and notification delivery.
 
-### Backup D — Push Delivery Details
+### Backup D — Internal Subscribers: Chat Mirroring
+
+Use this if someone asks what the event bus bought beyond notifications:
+
+- `packages/api/src/trpc.ts` registers notification handlers once with both `notificationServiceSingleton` and `chatTimelineServiceSingleton`.
+- `event-handlers.ts` can call `ChatTimelineService.addSystemMessage(...)` from the same typed event payload that drives notification delivery.
+- Chat mirroring is intentionally not the same as push/email delivery; it can still create durable product context even when a user has disabled notification channels.
+- `packages/app/features/chat/state/chat-timeline.ts` maps system messages into first-class chat timeline items, so the internal side effect becomes visible product UI.
+
+Core line:
+
+`The event did not just send a message out of the app. It let the app write the same product moment back into itself.`
+
+### Backup E — Push Delivery Details
 
 For provider-mechanics questions:
 
@@ -554,7 +617,7 @@ Core line:
 
 `The service owns delivery mechanics so product flows do not.`
 
-### Backup E — Source Hierarchy
+### Backup F — Source Hierarchy
 
 Use current architecture as the source of truth:
 
@@ -600,6 +663,7 @@ Avoid making third-party tools the villain. The better argument:
 - Demo proves event fired, fan-out happened, and tap landed correctly.
 - The before/after code transition does not replace direct calls with a channel-shaped product-service payload.
 - At least one slide shows type safety through `DomainEvents[K]` plus Zod runtime validation.
+- Chat mirroring is presented as an internal subscriber payoff, not as a separate product-service responsibility.
 - Full talk rehearses under 20 minutes.
 - Historical, future, and internal refactor items are labeled and not presented as current product behavior.
 - Build-vs-buy section clarifies responsibility boundaries and does not dunk on vendors.

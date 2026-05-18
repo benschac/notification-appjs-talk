@@ -1,30 +1,17 @@
+import { DOMAIN_EVENTS } from "@repo/api/events";
+import {
+  currentTalkStateInputSchema,
+  endTalkInputSchema,
+  liveActivityTokenRegistrationSchema,
+  slideChangedInputSchema,
+  startTalkInputSchema,
+  type LiveActivityTokenRegistration,
+  type TalkSlideState,
+} from "@repo/talk/contracts";
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 
+import { demoNotificationSystem } from "../notification-system";
 import { baseProcedure, createTRPCRouter } from "../init";
-
-const liveActivityPlatformSchema = z.enum(["ios"]);
-
-const talkSlideStateSchema = z.object({
-  talkId: z.string().min(1),
-  slideIndex: z.number().int().nonnegative(),
-  slideCount: z.number().int().positive(),
-  title: z.string().min(1).max(160),
-  section: z.string().max(100).optional(),
-  takeaway: z.string().max(240).optional(),
-  updatedAt: z.string().datetime(),
-  deepLink: z.string().max(300).optional(),
-});
-
-const tokenRegistrationSchema = z.object({
-  sessionId: z.string().min(1),
-  activityId: z.string().min(1),
-  pushToken: z.string().min(1),
-  platform: liveActivityPlatformSchema,
-});
-
-type TalkSlideState = z.infer<typeof talkSlideStateSchema>;
-type LiveActivityTokenRegistration = z.infer<typeof tokenRegistrationSchema>;
 
 type TalkSession = {
   id: string;
@@ -61,11 +48,7 @@ const getSessionOrThrow = (sessionId: string) => {
 
 export const talkRouter = createTRPCRouter({
   start: baseProcedure
-    .input(
-      z.object({
-        talkSlug: z.string().min(1).default("appjs-2026"),
-      })
-    )
+    .input(startTalkInputSchema)
     .mutation(({ input }) => {
       const session: TalkSession = {
         id: crypto.randomUUID(),
@@ -82,17 +65,13 @@ export const talkRouter = createTRPCRouter({
     }),
 
   currentState: baseProcedure
-    .input(
-      z.object({
-        sessionId: z.string().min(1),
-      })
-    )
+    .input(currentTalkStateInputSchema)
     .query(({ input }) => {
       return serializeSession(getSessionOrThrow(input.sessionId));
     }),
 
   registerLiveActivityToken: baseProcedure
-    .input(tokenRegistrationSchema)
+    .input(liveActivityTokenRegistrationSchema)
     .mutation(({ input }) => {
       const session = getSessionOrThrow(input.sessionId);
       const registeredAt = new Date().toISOString();
@@ -111,15 +90,15 @@ export const talkRouter = createTRPCRouter({
     }),
 
   slideChanged: baseProcedure
-    .input(
-      z.object({
-        sessionId: z.string().min(1),
-        slide: talkSlideStateSchema,
-      })
-    )
+    .input(slideChangedInputSchema)
     .mutation(({ input }) => {
       const session = getSessionOrThrow(input.sessionId);
       session.latestSlide = input.slide;
+      void demoNotificationSystem.events.emitAsync(DOMAIN_EVENTS.TALK.SLIDE_CHANGED, {
+        sessionId: session.id,
+        slide: input.slide,
+        liveActivityTokenCount: session.liveActivityTokens.size,
+      });
 
       return {
         session: serializeSession(session),
@@ -128,12 +107,7 @@ export const talkRouter = createTRPCRouter({
     }),
 
   end: baseProcedure
-    .input(
-      z.object({
-        sessionId: z.string().min(1),
-        finalSlide: talkSlideStateSchema.optional(),
-      })
-    )
+    .input(endTalkInputSchema)
     .mutation(({ input }) => {
       const session = getSessionOrThrow(input.sessionId);
       session.endedAt = new Date().toISOString();
