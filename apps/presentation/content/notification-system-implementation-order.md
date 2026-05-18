@@ -29,7 +29,7 @@ graph TB
     end
 
     subgraph "Known Gaps"
-        G1[Verify lateness handler wiring end-to-end]
+        G1[Lateness handlers not wired: schemas and templates exist but no eventBus listeners in event-handlers.ts]
         G2[Expand first-class in_app producer patterns]
         style G1 fill:#fff3cd
         style G2 fill:#fff3cd
@@ -699,10 +699,10 @@ Service Integration (emit events)
 
 ### After Phase 1
 
-- [ ] New `send()` method works with both channels
-- [ ] Existing methods still work (backward compatible)
-- [ ] Tests pass for all edge cases
-- [ ] Performance comparable to `sendBoth()`
+- [x] New `send()` method works with both channels
+- [x] Existing methods still work (backward compatible)
+- [x] Tests pass for all edge cases
+- [x] Performance comparable to `sendBoth()`
 
 ### After Phase 2 ✅ **COMPLETED**
 
@@ -730,8 +730,8 @@ Service Integration (emit events)
 - [x] `on_my_way` - Pickup status updates migrated to events with **OnMyWayEmail.tsx**
 - [x] `cancel_pickup` - Pickup cancellation notifications migrated to events
 - [x] `gift_has_been_picked_up` - Pickup completion notifications with **PickupCompletedEmail.tsx** ✅ **JUST COMPLETED**
+- [x] `post_deleted` - Post deletion notifications
 - [ ] `removed_recipient` - Recipient removal notifications
-- [ ] `post_deleted` - Post deletion notifications
 - [ ] Lateness notifications - 5 types from Supabase functions
 
 #### **NEW**: React Email Template Integration ✅ **ENHANCED**
@@ -775,54 +775,26 @@ Service Integration (emit events)
 | ----------------- | --------- | ------ | ----------------------- | ----------- |
 | `post_deleted`    | 2h        | 1.5h   | ✅ PostDeletedEmail.tsx | ✅ Complete |
 
-## Next Phases (Future Work)
+## Remaining Work (Low Priority)
 
-### Phase 4: Remaining Notification Events
+The core notification system is production-ready. The remaining work is now limited to the last uncovered notification paths and a small amount of producer cleanup.
 
-Following the established patterns from Phase 3:
+- `removed_recipient` - Recipient removal notifications
+- Lateness notifications - 5 Supabase-driven lateness notification types
+- Explicit first-class `in_app`-only producer patterns can be expanded if needed
 
-#### Receiving Notifications (6 types)
-
-- Pickup scheduled/confirmed
-- Pickup reminders
-- Chat messages
-- Item updates
-
-#### Giving Notifications (8 types)
-
-- New interest received
-- Pickup confirmations
-- Schedule changes
-- Completion confirmations
-
-#### Reminder Notifications (5 types)
-
-- Pickup reminders
-- Response timeouts
-- Expiration warnings
-
-#### Implementation Pattern for All Future Phases
+### Implementation Pattern for Remaining Work
 
 1. **Rich Event Schemas**: Include all notification data in events
 2. **Payload-First Handlers**: No database queries in event handlers
 3. **Business Logic Separation**: Compute data in services, emit rich events
 4. **tRPC DI Integration**: Register handlers in global setup once
 
-**Estimated Time per Group**: 4-6 hours each (following established patterns)
-
-## Decision Point
-
-After Phase 1, evaluate:
-
-- Is the new API working well?
-- Are there any unexpected issues?
-- Should we proceed with events or refine the API?
-
-This checkpoint allows you to adjust course before committing to the larger event system changes.
+**Estimated completion**: 4-6 hours following established patterns
 
 ## ✅ IMPLEMENTATION COMPLETE - SUMMARY
 
-### 🎉 What Was Delivered (December 2024)
+### 🎉 What Is Delivered As Of February 2026
 
 The **complete event-driven notification system** is now production-ready with:
 
@@ -844,6 +816,20 @@ The **complete event-driven notification system** is now production-ready with:
   - `PostDeletedEmail.tsx` - Post deletion notification ✅ **NEW**
 - **Template rendering** integrated into business services
 - **Parallel data fetching** for efficient template population
+
+#### **Current Delivery Surface** ✅
+
+- **Push channel**
+- **Email channel with queue fallback**
+- **In-app channel** backed by the notification ledger and inbox APIs
+- **Chat timeline mirroring** for system messages, intentionally not preference gated
+
+#### **Current Operations** ✅
+
+- **One-time tRPC handler registration** during bootstrap
+- **Per-request unified notifications plus inbox service** in context
+- **Scheduled reminders** dispatched through trigger tasks
+- **Delivery lifecycle events** for delivered, failed, and skipped outcomes
 
 #### **Complete Notification Coverage** ✅
 
@@ -888,45 +874,14 @@ The **complete event-driven notification system** is now production-ready with:
 4. **User Experience**: Professional email templates and reliable delivery
 5. **Developer Experience**: Type-safe APIs and comprehensive error handling
 
-### 📋 Remaining Work (Low Priority)
+### 📋 Remaining Work
 
-Only 2 notification types remain for complete coverage:
+Only two areas remain before notification coverage is fully complete:
 
 - `removed_recipient` - Recipient removal notifications
-- 5 Lateness notifications from Supabase functions
+- Lateness notifications - 5 Supabase-driven lateness notification types
 
-**Estimated completion**: 4-6 hours following established patterns
-
-### ✅ **NEW COMPLETION (January 2025)**: `post_deleted` Notification
-
-**Just completed** - Post deletion notifications with professional email templates and event-driven architecture!
-
-#### **Implementation Details**
-
-1. **Event Schema Enhancement**: Updated `giftDeletedSchema` with rich payload structure including interested user data and pre-computed notification payloads
-
-2. **React Email Template**: Created `PostDeletedEmail.tsx` with personalized messaging that dynamically shows the number of affected items per user
-
-3. **Event Handler**: Added `setupPostDeletionHandlers()` with batch notification processing following established error handling patterns
-
-4. **Service Integration**: Replaced direct notification calls in `GiftManagementService.deleteGift()` with event emission, maintaining the rich payload pattern
-
-5. **tRPC Registration**: Integrated the new handler into the notification initialization pipeline
-
-#### **User Experience**
-
-- **Push Notification**: "A post was deleted from [Giver Name]"
-- **Professional Email**: Explains exactly how many items each user was interested in that are now unavailable
-- **Personalized Content**: Dynamic messaging based on single vs multiple items
-
-#### **Technical Benefits**
-
-- **Event-Driven**: Uses established `gift.deleted` event pattern
-- **Batch Processing**: Efficient handling of multiple recipients
-- **Non-Blocking**: Event failures don't affect gift deletion operation
-- **Type-Safe**: Full TypeScript integration with Zod validation
-
-The core notification system is **production-ready** and handles all critical user journeys. Future additions can follow the established patterns with minimal effort.
+Future additions can follow the established event-driven patterns with minimal effort.
 
 ---
 
@@ -1008,14 +963,42 @@ sequenceDiagram
   - `markUnread`
   - `markAllRead`
   - `getUnreadCount`
-- tRPC exposure through notifications router:
-  - `listInbox`
-  - `getUnreadCount`
-  - `markRead`
-  - `markUnread`
-  - `markAllRead`
 - Context wiring in `trpc.ts` with `notificationInbox` instance.
 - Ledger excludes `chat_message` type from inbox counts/list by default.
+
+**Full tRPC notifications router (`packages/api/src/routers/notifications.ts`) - 24 procedures:**
+
+*Inbox management:*
+- `listInbox` - cursor-paginated inbox with filter (`all` / `unread` / `updates` / `system`)
+- `getUnreadCount` - unread badge count
+- `markRead(id)` - mark single notification read
+- `markUnread(id)` - mark single notification unread
+- `markAllRead()` - bulk read mark
+
+*Device and token management:*
+- `getUserTokens()` - list user's registered push tokens
+- `registerDevice(token, deviceType, deviceId?)` - register push token with old-token cleanup
+- `removeDevice(token)` - unregister a single push token
+- `removeDevicesByDeviceId(deviceId)` - remove all tokens for a device ID
+
+*Preferences and version:*
+- `getNotificationPreferences()` - query per-type push/email preferences
+- `updateNotificationPreferences(preferences)` - update preferences and invalidate profile cache
+- `getSupportedBinaries()` - `publicProcedure` returning minimum supported app binary version list
+
+*Developer and testing tools:*
+- `sendTestNotificationToSelf()` - send push to self
+- `sendTestNotificationToUser(email)` - send push to another user by email
+- `checkPushReceipts(ticketIds, dryRun?)` - validate Expo push receipts and clean invalid tokens
+- `sendTestEmailToSelf()` - send email to self via `unifiedNotifications.send()`
+- `sendTestEmailToUser(targetEmail)` - send raw HTML email to any address
+- `sendTestInterestShownEmail(targetEmail, ...)` - send rendered `InterestShownEmail.tsx`
+- `sendTestInterestRemovedEmail(targetEmail, ...)` - send rendered `InterestRemovedEmail.tsx`
+- `testRemindReceiverPickup()` - invoke `remind_receiver_pickup` Supabase edge function
+- `testNotificationToken(userId?, token?)` - invoke `test_notif_token` Supabase edge function
+- `createTestPickupGroup(userId?, minutesFromNow?)` - seed test pickup group with items
+- `testDatabaseUpdate()` - update `pickup_groups.recipient_notified` directly for debugging
+- `testRecipientSelectionNotifications(testScenario, includeEmails?)` - run selection flow with mock data
 
 ```mermaid
 flowchart TB
@@ -1088,11 +1071,171 @@ flowchart TB
 **File:** `packages/api/src/trpc.ts`
 
 **What was added:**
-- One-time registration of all notification handlers in context bootstrap.
-- Handler setup now includes reminder handlers and chat-aware handlers.
-- Per-request unified notifications instance creation + ledger + inbox wiring.
+- One-time registration of all 16 notification handlers in context bootstrap (`initializeNotificationHandlers()`).
+- Each handler setup function now receives two module-level singletons as arguments:
+  1. `notificationServiceSingleton` - unified service with admin Supabase access
+  2. `chatTimelineServiceSingleton` - `new ChatTimelineService(supabaseAdmin)` created once at module load
+- `initializeAnalytics()` is co-registered in the same bootstrap sequence, guarded by its own `analyticsInitialized` flag.
+- Per-request context properties:
+  - `unifiedNotifications` - per-request unified service with email queue defaults
+  - `notifications` - backward-compat alias for `pushService` singleton
+  - `email` - per-request `EmailService`
+  - `notificationInbox` - `NotificationInboxService` backed by admin Supabase
 
-### 7) Testing Additions
+**Handler registration signature (all 16 follow this pattern):**
+
+```typescript
+setupFriendshipNotificationHandlers(notificationServiceSingleton, chatTimelineServiceSingleton)
+setupGroupNotificationHandlers(notificationServiceSingleton, chatTimelineServiceSingleton)
+setupInterestNotificationHandlers(notificationServiceSingleton, chatTimelineServiceSingleton)
+setupRecipientSelectionHandlers(notificationServiceSingleton, chatTimelineServiceSingleton)
+setupPickupNotificationHandlers(notificationServiceSingleton, chatTimelineServiceSingleton)
+setupNudgeRecipientHandlers(notificationServiceSingleton, chatTimelineServiceSingleton)
+setupPostDeletionHandlers(notificationServiceSingleton, chatTimelineServiceSingleton)
+setupCommentNotificationHandlers(notificationServiceSingleton, chatTimelineServiceSingleton)
+setupChatNotificationHandlers(notificationServiceSingleton, chatTimelineServiceSingleton)
+setupGiftUpdateHandlers(notificationServiceSingleton, chatTimelineServiceSingleton)
+setupGiftPostHandlers(notificationServiceSingleton, chatTimelineServiceSingleton)
+setupNoShowHandlers(notificationServiceSingleton, chatTimelineServiceSingleton)
+setupPickupConfirmationHandlers(notificationServiceSingleton, chatTimelineServiceSingleton)
+setupSchedulingHandlers(notificationServiceSingleton, chatTimelineServiceSingleton)
+setupReminderNotificationHandlers(notificationServiceSingleton, chatTimelineServiceSingleton)
+setupTestNotificationHandlers(notificationServiceSingleton, chatTimelineServiceSingleton)
+```
+
+### 7) Client Token Lifecycle + App Runtime Behavior
+
+**Files:**
+- `packages/app/provider/auth/AuthProvider.native.tsx`
+- `packages/app/provider/notifications/NotificationProvider.native.tsx`
+- `packages/app/stores/userPreferencesStore.ts`
+- `packages/app/services/notificationNavigation.ts`
+
+**What was added:**
+- Auth state and push state are intentionally coupled:
+  - `AuthProvider.native.tsx` records push-relevant auth events into local metadata.
+  - Sign-out clears user data but preserves the cached Expo push token so the next signed-in session can re-register it.
+- Push token sync is not a one-shot registration flow. `NotificationProvider.native.tsx` actively re-syncs from multiple sources:
+  - `app_start`
+  - `app_active`
+  - `auth_restore`
+  - `manual_prompt`
+  - `ota_change`
+- The provider derives a stable per-device identifier, hashes it for analytics, and sends project/build/runtime metadata with push diagnostics.
+- Token sync has repair paths:
+  - retries Expo token fetches
+  - re-registers a cached local token if fresh fetch fails
+  - schedules delayed retries when session restoration or transient network failures block registration
+  - triggers `removeDevicesByDeviceId(...)` cleanup after repeated stale fetch failures
+- App runtime behavior is part of the notification system:
+  - badge count is kept in sync with inbox unread count
+  - app foregrounding triggers `markAllRead()` + unread refresh
+  - push receipt/tap listeners refresh unread state
+  - notification taps route through `dispatchNotificationNavigation(...)`
+
+```mermaid
+sequenceDiagram
+    participant A as AuthProvider
+    participant N as NotificationProvider
+    participant E as Expo Notifications
+    participant API as notifications router
+    participant S as UserPreferencesStore
+    participant NAV as NotificationNavigation
+
+    A->>S: recordPushAuthEvent(authEvent)
+    A->>S: preserve stored Expo token on sign-out
+    N->>E: getPermissions / getExpoPushToken
+    N->>API: registerDevice(token, deviceType, deviceId)
+    alt Fresh token fetch fails but cached token exists
+        N->>API: registerDevice(cachedToken, ...)
+    else Repeated failures on stale device
+        N->>API: removeDevicesByDeviceId(deviceId)
+    end
+    N->>API: getUnreadCount / markAllRead
+    E-->>N: notification received / response tapped
+    N->>NAV: dispatchNotificationNavigation(data)
+```
+
+### 8) Push Delivery Hardening + Receipt Hygiene
+
+**Files:**
+- `packages/api/src/services/notifications/push/index.ts`
+- `packages/api/src/services/notifications/unified-notification.service.ts`
+- `packages/api/src/routers/notifications.ts`
+
+**What was added:**
+- Push send behavior is hardened beyond “call Expo and hope”:
+  - provider error messages are normalized into internal error codes
+  - bounded retries are used only for retry-safe ticket failures (`transient`, `rate_limited`, `provider_outage`)
+  - thrown transport errors are intentionally **not retried**, because Expo may already have accepted the request and retries could duplicate deliveries
+- Payload safety is enforced before sending:
+  - title/body are truncated to configured byte limits
+  - invalid or stale Expo tokens are filtered and eventually removed
+- Receipt processing is a first-class maintenance loop:
+  - push ticket → token mappings are cached in Redis
+  - the same mappings are persisted to `push_receipt_tokens`
+  - `checkPushReceipts(...)` can be run in normal mode or `dryRun`
+  - invalid-token receipts trigger token cleanup
+  - receipt payloads are merged back into notification ledger rows for later inspection
+- This means the push system now has both send-time hygiene and delayed receipt-time hygiene.
+
+```mermaid
+flowchart LR
+    SEND[Send push request] --> CLASSIFY[Classify Expo error/ticket]
+    CLASSIFY -->|retry-safe| RETRY[Bounded retry with backoff]
+    CLASSIFY -->|transport throw| NORETRY[Do not retry to avoid duplicate delivery]
+    RETRY --> RESULT[Store ticket id + channel result]
+    RESULT --> CACHE[Cache ticket-token mapping in Redis]
+    RESULT --> DB[(push_receipt_tokens)]
+    CACHE --> RECEIPTS[checkPushReceipts]
+    DB --> RECEIPTS
+    RECEIPTS --> CLEANUP[Cleanup invalid tokens]
+    RECEIPTS --> LEDGER[Merge receipt data into notifications table]
+```
+
+### 9) Singleton Boot + Runtime Model
+
+**Files:**
+- `packages/api/src/services/notifications/singleton.ts`
+- `packages/api/src/services/notifications/push/index.ts`
+- `packages/api/src/services/profile-cache/profile-cache.service.ts`
+- `packages/api/src/services/notifications/push/push-token-cache.service.ts`
+
+**What was added:**
+- Notifications now have a module-level runtime for contexts that need system-level access outside a request-scoped DI path.
+- `singleton.ts` builds lazy proxies around:
+  - `notificationServiceSingleton`
+  - `pushService`
+  - `emailService`
+  - `userPreferencesService`
+- The singleton boot path handles real environment concerns:
+  - chooses prod vs dev Upstash Redis credentials from `NODE_ENV`
+  - creates an Expo client with `EXPO_ACCESS_TOKEN` when present
+  - warns in production if `EXPO_ACCESS_TOKEN` is missing
+  - creates a system-level Resend email client
+- System-scoped profile-cache and push-token-cache helpers are composed into the singleton so batch/reminder/event-handler code can access profile data and token state without a user request context.
+- The unified singleton defaults batch sends to the email queue and shares a single ledger repository.
+- `ensureServicesInitialized()` exists for explicit warm-up in environments that want deterministic startup.
+
+```mermaid
+flowchart TB
+    ENV[process.env / NODE_ENV] --> BOOT[singleton.ts initializeServices()]
+    BOOT --> REDIS[Shared Redis client]
+    BOOT --> EXPO[Expo client with optional EXPO_ACCESS_TOKEN]
+    BOOT --> RESEND[Resend client]
+    BOOT --> PROFILE[Profile cache helpers]
+    BOOT --> TOKENS[Push token cache helpers]
+    REDIS --> PUSH[pushService proxy]
+    EXPO --> PUSH
+    RESEND --> EMAIL[emailService proxy]
+    PROFILE --> UNIFIED[notificationServiceSingleton proxy]
+    TOKENS --> PUSH
+    PUSH --> UNIFIED
+    EMAIL --> UNIFIED
+    UNIFIED --> LEDGER[NotificationLedgerRepository]
+```
+
+### 10) Testing Additions
 
 **Files:**
 - `packages/api/__tests__/services/notifications/unified-notification.service.test.ts`
@@ -1106,7 +1249,7 @@ flowchart TB
 - Inbox pagination/filtering and read-state mutation behavior
 - Repository query shaping and unread counting
 
-### 8) Known Remaining Gaps (for future plan updates)
+### 11) Known Remaining Gaps (for future plan updates)
 
-- Lateness notifications have schemas and templates, but active end-to-end handler wiring should be re-verified.
+- **Lateness notifications are not wired end-to-end.** The five types (`five_minutes_late`, `ten_minutes_late`, `fifteen_minutes_late`, `twenty_minutes_late`, `thirty_minutes_late`) have Zod schemas (`latenessPushDataSchema`, `latenessPushSchema`) and push templates in `notification-templates.ts`, but there are **no `eventBus.on()` listeners** for `DOMAIN_EVENTS.PICKUP_STATUS.FIVE_MINUTES_LATE` (or the other four) anywhere in `event-handlers.ts`. These must be wired before lateness push/email notifications can fire.
 - Explicit first-class `in_app`-only producer patterns can be expanded if needed.
