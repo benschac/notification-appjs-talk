@@ -8,14 +8,17 @@ import { ShikiMagicMovePrecompiled } from "shiki-magic-move/react";
 import type { RevealApi, RevealConfig, RevealPlugin, RevealPluginFactory } from "reveal.js";
 import type { KeyedTokensInfo } from "shiki-magic-move/core";
 
-import { CodeMorphSlide } from "./code-morph-slide";
 import {
   createRevealAnythingPlugin,
   type AnythingRevealConfig,
 } from "./reveal-anything-plugin";
+import cryingImage from "./crying.png";
+import domainDrivenDesignImage from "./ddd.jpeg";
 import headshotImage from "./headshot.jpeg";
 import notificationIllustration from "./notif_illistration.png";
+import saltBaeTypescriptImage from "./saltbaets.jpeg";
 import treasureBagImage from "./Longarms.png";
+import vennDiagramImage from "./vendiagram.png";
 import styles from "../styles/deck.module.css";
 
 type TalkSnapshot = {
@@ -49,6 +52,94 @@ type MermaidRevealConfig = RevealConfig &
 };
 
 type DeckPlugin = RevealPlugin | RevealPluginFactory;
+
+const notificationTypes = [
+  "interest_shown",
+  "first_interest_shown",
+  "first_interest_no_profile_picture",
+  "item_interest_toggled",
+  "chosen",
+  "not_chosen",
+  "auto_scheduled_pickup",
+  "confirmed_pickup_time",
+  "five_minutes_late",
+  "ten_minutes_late",
+  "fifteen_minutes_late",
+  "twenty_minutes_late",
+  "thirty_minutes_late",
+  "receiver_no_show",
+  "giver_no_show",
+  "nudge_recipient",
+  "post_deleted",
+  "gift_items_updated",
+  "chat_message",
+  "comment_received",
+  "comment_reply_received",
+  "seller_offer_received",
+  "buyer_match_credit_requested",
+  "watched_item_price_changed",
+  "watched_item_still_available",
+  "watched_item_status_changed",
+  "watched_offer_status_changed",
+  "watched_competing_offer_unavailable",
+  "paid_pickup_scheduling_update",
+  "friend_request_received",
+  "friend_request_accepted",
+  "friend_request_rejected",
+  "friend_removed",
+  "friend_gift_posted",
+  "group_invite_received",
+  "group_invite_accepted",
+  "group_join_requested",
+  "group_join_approved",
+  "group_join_rejected",
+  "group_member_removed",
+  "group_member_blocked",
+  "group_post_shared",
+  "chosen_removed_interest",
+  "removed_recipient",
+  "gift_post_created",
+  "item_deleted",
+  "pickup_auto_mark_warning",
+  "pickup_auto_mark_completed",
+  "gift_simmer_expiring",
+  "gift_simmer_window_ended",
+  "pickup_reschedule_requested",
+  "pickup_reschedule_responded",
+  "pickup_note_added",
+  "pickup_note_updated",
+  "marked_taken_without_schedule",
+  "pickup_address_requested",
+  "pickup_address_approved",
+  "pickup_address_denied",
+  "picked_up",
+  "gift_picked_up",
+  "gift_has_been_picked_up",
+  "waiting_for_schedule",
+  "picked_availability",
+  "availability_removal",
+  "removed",
+  "removed_recipient",
+  "backed_out",
+  "flash_pickup_scheduled",
+  "pickup_rescheduled",
+  "availability_updated",
+  "schedule_reminder",
+  "schedule_time_reminder",
+  "pickup_reminder",
+  "welcome",
+  "on_my_way",
+  "arrived",
+  "giver_completed",
+  "receiver_completed",
+  "cancel_pickup",
+  "removed_interest",
+  "test_notification",
+  "pickup_address_unlock",
+  "publish_post_requested",
+  "publish_post_approved",
+  "publish_post_rejected",
+];
 
 function initializeExternalDocFrame(element: HTMLElement) {
   const existingIframe = element.querySelector("iframe");
@@ -239,13 +330,37 @@ function ProgressiveCodeFrame({
   );
 }
 
+function StaticHighlightedCodeBlock({ steps }: { steps: KeyedTokensInfo[] }) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  return (
+    <div className={`${styles.magicMoveFrame} ${styles.staticHighlightedCodeBlock}`}>
+      {isMounted ? (
+        <ShikiMagicMovePrecompiled
+          steps={steps}
+          step={0}
+          options={{
+            lineNumbers: false,
+          }}
+        />
+      ) : (
+        <div className={styles.magicMovePlaceholder} />
+      )}
+    </div>
+  );
+}
+
 export function PresentationDeck({
-  codeMorphSteps,
   directSideEffectSteps,
+  eventEmitStep,
   snapshot,
 }: {
-  codeMorphSteps: KeyedTokensInfo[];
   directSideEffectSteps: KeyedTokensInfo[];
+  eventEmitStep: KeyedTokensInfo[];
   snapshot: TalkSnapshot;
 }) {
   const deckRef = useRef<HTMLDivElement>(null);
@@ -398,24 +513,225 @@ export function PresentationDeck({
           title="Expo Notifications docs"
         />
         <aside className="notes">
-          Start with the obvious thing: a React Native app needs push notifications.
-          The surprise was that the push API was not the real architecture.
+        When I was reading the request for proposals, the only requirement was using an Expo service, and I said, I bet I could sneak a backend talk into a React Native conference. "Hold my notification."
         </aside>
       </section>
 
       <ProgressiveCodeFrame deck={deck} steps={directSideEffectSteps} />
 
-      <CodeMorphSlide
-        deck={deck}
-        frameDataId="event-bus-code-frame"
-        fragmentSteps={[2]}
-        initialStep={1}
-        layout="hero"
-        showCopy={false}
-        steps={codeMorphSteps}
-        subtitle=""
-        title=""
-      />
+      <section>
+        <p className={styles.eyebrow}>Scale pressure</p>
+        <h2 className={styles.notificationTypeTitle}>
+          What happens when you have 84 different notification type values?
+        </h2>
+        <div className={styles.notificationTypeCloud}>
+          {notificationTypes.map((type, index) => (
+            <span
+              key={`${type}-${index}`}
+              className={`fragment ${styles.notificationTypeBubble}`}
+              data-fragment-index={Math.floor(index / 10)}
+            >
+              {type}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <p className={styles.eyebrow}>Scale pressure</p>
+        <h2 className={`${styles.sectionTitle} ${styles.wideQuestionTitle}`}>
+          What happens when you need to derive different notifications from a single event?
+        </h2>
+      </section>
+
+      <section>
+        <p className={styles.eyebrow}>Derived notifications</p>
+        <div className={`mermaid ${styles.mermaidDiagram} ${styles.derivedNotificationDiagram}`}>
+          <pre>{`flowchart LR
+    A["recipient.switched"] --> B["removed_recipient<br/>old recipient"]
+    A --> C["chosen<br/>new recipient"]`}</pre>
+        </div>
+      </section>
+
+      <section>
+        <div className={styles.cornerCryLayout}>
+          <div>
+            <p className={styles.eyebrow}>Scale pressure</p>
+            <h2 className={styles.bigIdea}>Go in the corner and cry.</h2>
+          </div>
+          <Image
+            alt="Crying reaction to notification scale"
+            className={styles.cornerCryImage}
+            sizes="30rem"
+            src={cryingImage}
+          />
+        </div>
+      </section>
+
+      <section>
+        <p className={styles.eyebrow}>I Started thinking about Redux</p>
+        <ExternalDocFrame
+          className={styles.storyDocFrame}
+          src="https://redux.js.org/introduction/why-rtk-is-redux-today#what-does-the-redux-core-do"
+          title="Redux core docs"
+        />
+      </section>
+
+      <section>
+        <p className={styles.eyebrow}>Then I started thinking</p>
+        <h2 className={styles.reduxDocTitle}>What about actions and action creators?</h2>
+        <ExternalDocFrame
+          className={styles.reduxDocFrame}
+          src="https://redux.js.org/usage/reducing-boilerplate#generating-action-creators"
+          title="Redux action creators docs"
+        />
+      </section>
+
+      <section>
+        <p className={styles.eyebrow}>Then the shape</p>
+        <h2 className={styles.fsaTitle}>Flux Standard Action</h2>
+        <div className={styles.fsaLayout}>
+          <div className={styles.fsaExamples}>
+            <pre className={styles.compactCodeBlock}>
+              <code>{`{
+  type: "ADD_TODO",
+  payload: {
+    text: "Do something."
+  }
+}`}</code>
+            </pre>
+            <pre className={styles.compactCodeBlock}>
+              <code>{`{
+  type: "ADD_TODO",
+  payload: new Error(),
+  error: true
+}`}</code>
+            </pre>
+          </div>
+          <div className={styles.fsaRules}>
+            <p>An action must be a plain object with a type.</p>
+            <p>It may include payload, error, and meta.</p>
+            <p>It must not include anything else.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <p className={styles.eyebrow}>Then the language</p>
+        <h2 className={styles.reduxDocTitle}>Domain-Driven Design</h2>
+        <Image
+          alt="Domain-Driven Design book cover"
+          className={styles.dddCoverImage}
+          sizes="24rem"
+          src={domainDrivenDesignImage}
+        />
+      </section>
+
+      <section>
+        <p className={styles.eyebrow}>Then the mechanism</p>
+        <h2 className={styles.eventEmitterTitle}>EventEmitter3</h2>
+        <div className={styles.eventEmitterLayout}>
+          <div>
+            <p className={styles.eventEmitterStatement}>
+              A small, fast EventEmitter became the in-process event bus.
+            </p>
+            <ul className={styles.eventEmitterList}>
+              <li>Emit product events by name.</li>
+              <li>Subscribe side effects outside the product flow.</li>
+              <li>Keep the bus local, typed, and boring.</li>
+            </ul>
+          </div>
+          <pre className={styles.eventEmitterCode}>
+            <code>{`import EventEmitter from "eventemitter3";
+
+const eventBus = new EventEmitter();
+
+eventBus.on("item.bid.received", notifySeller);
+eventBus.on("item.bid.received", mirrorIntoChat);
+eventBus.on("item.bid.received", trackAnalytics);
+
+eventBus.emit("item.bid.received", payload);`}</code>
+          </pre>
+        </div>
+      </section>
+
+      <section className={styles.fullBleedImageSlide}>
+        <Image
+          alt="Salt Bae sprinkling TypeScript"
+          className={styles.fullBleedMemeImage}
+          priority
+          sizes="100vw"
+          src={saltBaeTypescriptImage}
+        />
+      </section>
+
+      <section>
+        <p className={styles.eyebrow}>And a schema</p>
+        <h2 className={styles.reduxDocTitle}>Parse don't validate</h2>
+        <ExternalDocFrame
+          className={styles.storyDocFrame}
+          src="https://zod.dev/"
+          title="Zod docs"
+        />
+      </section>
+
+      <section>
+        <h2 className={styles.fullWidthPunchline}>Just steal their ideas.</h2>
+      </section>
+
+      <section>
+        <Image
+          alt="Venn diagram showing Flux Actions, Event Bus, and Domain Events overlapping into a new idea"
+          className={styles.vennImage}
+          priority
+          sizes="78rem"
+          src={vennDiagramImage}
+        />
+      </section>
+
+      <section>
+        <div className={`mermaid ${styles.mermaidDiagram} ${styles.solutionMermaidDiagram}`}>
+          <pre>{`graph TB
+    User[User action] --> API[tRPC router] --> Service[Domain service]
+    Service --> EventBus[Event bus]
+    EventBus --> Handler[Notification handler]
+
+    Handler --> Unified[Unified notification service]
+    Unified --> Prefs[Preference and group checks]
+    Prefs --> Push[Push delivery]
+    Prefs --> Email[Email queue with fallback]
+
+    Unified --> Ledger[Notification ledger]
+    Ledger --> Inbox[In-app inbox reads]
+    Inbox --> InboxApi[listInbox / unread / read mutations]
+
+    Handler --> ChatMirror[Chat mirror path]
+    ChatMirror --> Timeline[ChatTimelineService.addSystemMessage]
+
+    Trigger[Trigger reminder tasks] --> Unified
+
+    Push --> Expo[Expo push API]
+    Email --> Provider[Email provider]
+
+    classDef userLayer fill:#e1f5fe,color:#111827,stroke:#7dd3fc
+    classDef eventLayer fill:#fff3e0,color:#111827,stroke:#f2a65a
+    classDef notifyLayer fill:#e8f5e8,color:#111827,stroke:#86efac
+    classDef storageLayer fill:#f1f8e9,color:#111827,stroke:#bef264
+    classDef extLayer fill:#fce4ec,color:#111827,stroke:#f9a8d4
+
+    class User,API,Service userLayer
+    class EventBus,Handler,Trigger eventLayer
+    class Unified,Prefs,Push,Email,ChatMirror,Timeline notifyLayer
+    class Ledger,Inbox,InboxApi storageLayer
+    class Expo,Provider extLayer`}</pre>
+        </div>
+      </section>
+
+      <section>
+        <p className={styles.eyebrow}>Step 1</p>
+        <h2 className={styles.sectionTitle}>Emit the event</h2>
+        <StaticHighlightedCodeBlock steps={eventEmitStep} />
+      </section>
 
       <section>
         <p className={styles.eyebrow}>The user moment</p>

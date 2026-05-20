@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { ShikiMagicMovePrecompiled } from "shiki-magic-move/react";
 import type { KeyedTokensInfo } from "shiki-magic-move/core";
 
+import useEffectMeme from "./useEffectMeme.jpeg";
 import styles from "../styles/deck.module.css";
 
 type RevealDeck = {
@@ -124,16 +126,39 @@ export function CodeMorphSlide({
   );
 
   if (!showCopy) {
+    const showUseEffectMeme = step === 2;
+
     return (
       <section
         ref={sectionRef}
-        className={styles.magicMoveSectionCodeOnly}
+        className={`${styles.magicMoveSectionCodeOnly} ${
+          showUseEffectMeme ? styles.magicMoveSectionCodeMeme : ""
+        }`}
         data-auto-animate
         data-auto-animate-duration="0.7"
         data-auto-animate-easing="cubic-bezier(0.22, 1, 0.36, 1)"
         data-auto-animate-id="event-bus-code-journey"
       >
-        {frame}
+        <p className={styles.codeOnlyStatement}>These are all just side effects.</p>
+        <div
+          className={`${styles.codeMemeLayout} ${
+            showUseEffectMeme ? styles.codeMemeLayoutVisible : ""
+          }`}
+        >
+          {frame}
+          <div
+            aria-hidden={!showUseEffectMeme}
+            className={styles.useEffectMemeSlot}
+          >
+            <Image
+              alt="Follow up logic revealed as useEffect meme"
+              className={styles.useEffectMeme}
+              priority
+              sizes="34rem"
+              src={useEffectMeme}
+            />
+          </div>
+        </div>
         {fragmentSteps.map((fragmentStep) => (
           <span
             key={fragmentStep}

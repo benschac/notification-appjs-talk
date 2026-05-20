@@ -144,6 +144,16 @@ const codeSteps = [
   directSideEffectSteps[6],
   directSideEffectSteps[8],
   `await bidOnItem(itemId, amount);
+
+useEffect(() => {
+  void importantSideEffects();
+}, [itemId]);
+
+async function importantSideEffects() {
+  // push, email, inbox, chat, analytics, Slack,
+  // webhooks, and live updates moved over here
+}`,
+  `await bidOnItem(itemId, amount);
 await eventBus.emit(EVENTS.ITEM.BID_RECEIVED, {
   bidderId,
   bidderName: bidder.name || "someone",
@@ -157,9 +167,20 @@ await eventBus.emit(EVENTS.ITEM.BID_RECEIVED, {
 });`,
 ];
 
+const eventEmitStep = `await bidOnItem(itemId, amount);
+
+eventBus.emit(EVENTS.ITEM_BID_RECEIVED, {
+  sellerId,
+  bidderId,
+  itemId,
+  amount,
+  bidAt,
+});`;
+
 type TalkCodeSteps = {
   codeMorphSteps: KeyedTokensInfo[];
   directSideEffectSteps: KeyedTokensInfo[];
+  eventEmitStep: KeyedTokensInfo[];
 };
 
 function compileCodeSteps(
@@ -190,5 +211,6 @@ export const getTalkCodeSteps = cache(async (): Promise<TalkCodeSteps> => {
   return {
     codeMorphSteps: compileCodeSteps(highlighter, codeSteps),
     directSideEffectSteps: compileCodeSteps(highlighter, directSideEffectSteps),
+    eventEmitStep: compileCodeSteps(highlighter, [eventEmitStep]),
   };
 });
