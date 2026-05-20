@@ -19,6 +19,8 @@ import headshotImage from "./headshot.jpeg";
 import mirroredChatImage from "./mirrored_chat.jpeg";
 import moosePmImage from "./moose_pm.png";
 import notificationIllustration from "./notif_illistration.png";
+import knockLogoImage from "./knocklogo.png";
+import oneSignalLogoImage from "./onesignal.png";
 import preferencesImage from "./preferences.png";
 import saltBaeTypescriptImage from "./saltbaets.jpeg";
 import treasureBagImage from "./Longarms.png";
@@ -342,7 +344,13 @@ function ProgressiveCodeFrame({
   );
 }
 
-function StaticHighlightedCodeBlock({ steps }: { steps: KeyedTokensInfo[] }) {
+function StaticHighlightedCodeBlock({
+  className = "",
+  steps,
+}: {
+  className?: string;
+  steps: KeyedTokensInfo[];
+}) {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -350,7 +358,7 @@ function StaticHighlightedCodeBlock({ steps }: { steps: KeyedTokensInfo[] }) {
   }, []);
 
   return (
-    <div className={`${styles.magicMoveFrame} ${styles.staticHighlightedCodeBlock}`}>
+    <div className={`${styles.magicMoveFrame} ${styles.staticHighlightedCodeBlock} ${className}`}>
       {isMounted ? (
         <ShikiMagicMovePrecompiled
           steps={steps}
@@ -369,12 +377,18 @@ function StaticHighlightedCodeBlock({ steps }: { steps: KeyedTokensInfo[] }) {
 export function PresentationDeck({
   codeMorphSteps,
   directSideEffectSteps,
+  eventBusTeachingStep,
+  eventRegistryStep,
   eventEmitStep,
+  notificationServiceSteps,
   snapshot,
 }: {
   codeMorphSteps: KeyedTokensInfo[];
   directSideEffectSteps: KeyedTokensInfo[];
+  eventBusTeachingStep: KeyedTokensInfo[];
+  eventRegistryStep: KeyedTokensInfo[];
   eventEmitStep: KeyedTokensInfo[];
+  notificationServiceSteps: KeyedTokensInfo[];
   snapshot: TalkSnapshot;
 }) {
   const deckRef = useRef<HTMLDivElement>(null);
@@ -793,9 +807,31 @@ eventBus.emit("item.bid.received", payload);`}</code>
       </section>
 
       <section className={styles.centeredContentSlide}>
-        <MermaidBlock
-          chart={`graph TB
-    Service[Domain service] --> EventBus[Event bus]
+        <div className={styles.provenTechnologyLayout}>
+          <h2 className={styles.provenTechnologyTitle}>Why use a proven Technology?</h2>
+          <div className={styles.provenTechnologyLogos}>
+            <Image
+              alt="OneSignal logo"
+              className={styles.provenTechnologyLogo}
+              sizes="28rem"
+              src={oneSignalLogoImage}
+            />
+            <Image
+              alt="Knock logo"
+              className={styles.provenTechnologyLogo}
+              sizes="28rem"
+              src={knockLogoImage}
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.centeredContentSlide}>
+        <div className={styles.solutionDiagramLayout}>
+          <h2 className={styles.solutionDiagramTitle}>It's really not so bad</h2>
+          <MermaidBlock
+            chart={`graph TB
+    Service[Domain service] --> EventBus[Typed Event Bus]
     EventBus --> Handler[Notification handler]
 
     Handler --> Unified[Unified notification service]
@@ -810,6 +846,9 @@ eventBus.emit("item.bid.received", payload);`}</code>
     Handler --> ChatMirror[Chat mirror path]
     ChatMirror --> Timeline[ChatTimelineService.addSystemMessage]
 
+    Handler --> Analytics[Analytics event]
+    Handler --> Slack[Slack webhook]
+
     Push --> Expo[Expo push API]
     Email --> Provider[Email provider]
 
@@ -821,12 +860,56 @@ eventBus.emit("item.bid.received", payload);`}</code>
 
     class Service userLayer
     class EventBus,Handler eventLayer
-    class Unified,Prefs,Push,Email,ChatMirror,Timeline notifyLayer
+    class Unified,Prefs,Push,Email,ChatMirror,Timeline,Analytics,Slack notifyLayer
     class Ledger,Inbox,InboxApi storageLayer
     class Expo,Provider extLayer`}
-          className={styles.solutionMermaidDiagram}
-        />
+            className={styles.solutionMermaidDiagram}
+          />
+        </div>
       </section>
+
+      <section className={styles.centeredContentSlide}>
+        <div className={styles.eventBusTeachingLayout}>
+          <h2 className={styles.eventBusTeachingTitle}>
+            Typed Event Bus
+          </h2>
+          <StaticHighlightedCodeBlock
+            className={styles.eventBusTeachingCode}
+            steps={eventBusTeachingStep}
+          />
+        </div>
+      </section>
+
+      <section className={styles.centeredContentSlide}>
+        <div className={styles.eventRegistryLayout}>
+          <h2 className={styles.eventRegistryTitle}>
+            One event name ties the whole contract together
+          </h2>
+          <div className={styles.eventRegistryBody}>
+            <StaticHighlightedCodeBlock
+              className={styles.eventRegistryCode}
+              steps={eventRegistryStep}
+            />
+            <div className={styles.eventRegistryNotes}>
+              <p>notification type</p>
+              <p>payload schema</p>
+              <p>template schema</p>
+              <p>inferred TypeScript payload</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <CodeMorphSlide
+        deck={deck}
+        frameDataId="notification-service-code-frame"
+        fragmentSteps={[1, 2, 3, 4, 5]}
+        initialStep={0}
+        layout="hero"
+        steps={notificationServiceSteps}
+        subtitle="Start with one service. Then make the delivery boundaries explicit."
+        title="Dependency injection"
+      />
 
       <section>
         <p className={styles.eyebrow}>Step 1</p>

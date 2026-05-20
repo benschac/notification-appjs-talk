@@ -177,10 +177,69 @@ eventBus.emit(EVENTS.ITEM_BID_RECEIVED, {
   bidAt,
 });`;
 
+const notificationServiceSteps = [
+  `const unifiedNotifications = createNotificationService({});`,
+  `const unifiedNotifications = createNotificationService({
+  push: pushService,
+});`,
+  `const unifiedNotifications = createNotificationService({
+  push: pushService,
+  email: emailService,
+});`,
+  `const unifiedNotifications = createNotificationService({
+  push: pushService,
+  email: emailService,
+  userPreferences: userPreferencesSingleton,
+});`,
+  `const unifiedNotifications = createNotificationService({
+  push: pushService,
+  email: emailService,
+  userPreferences: userPreferencesSingleton,
+  ledger: notificationLedgerRepository,
+});`,
+  `const unifiedNotifications = createNotificationService({
+  push: pushService,
+  email: emailService,
+  userPreferences: userPreferencesSingleton,
+  ledger: notificationLedgerRepository,
+  defaults: { batch: { useEmailQueue: true } },
+});`,
+]; 
+
+const eventBusTeachingStep = `class TypedEventBus {
+  private emitter = new EventEmitter();
+
+  emit<K extends keyof typeof domainEventSchemas>(
+    event: K,
+    payload: DomainEvents[K]
+  ) {
+    const schema = domainEventSchemas[event].payload;
+    const validatedPayload = schema.parse(payload);
+
+    return this.emitter.emit(event, validatedPayload);
+  }
+}`;
+
+const eventRegistryStep = `export const domainEventSchemas = {
+  [DOMAIN_EVENTS.GIFT.UPDATED]: {
+    notification: NOTIFICATION_TYPES.GIFT_ITEMS_UPDATED,
+    payload: giftUpdatedSchema,
+    template: updatePushDataSchema,
+  },
+} as const;
+
+export type DomainEvents = {
+  [K in keyof typeof domainEventSchemas]:
+    z.infer<(typeof domainEventSchemas)[K]["payload"]>;
+};`;
+
 type TalkCodeSteps = {
   codeMorphSteps: KeyedTokensInfo[];
   directSideEffectSteps: KeyedTokensInfo[];
+  eventBusTeachingStep: KeyedTokensInfo[];
+  eventRegistryStep: KeyedTokensInfo[];
   eventEmitStep: KeyedTokensInfo[];
+  notificationServiceSteps: KeyedTokensInfo[];
 };
 
 function compileCodeSteps(
@@ -211,6 +270,9 @@ export const getTalkCodeSteps = cache(async (): Promise<TalkCodeSteps> => {
   return {
     codeMorphSteps: compileCodeSteps(highlighter, codeSteps),
     directSideEffectSteps: compileCodeSteps(highlighter, directSideEffectSteps),
+    eventBusTeachingStep: compileCodeSteps(highlighter, [eventBusTeachingStep]),
+    eventRegistryStep: compileCodeSteps(highlighter, [eventRegistryStep]),
     eventEmitStep: compileCodeSteps(highlighter, [eventEmitStep]),
+    notificationServiceSteps: compileCodeSteps(highlighter, notificationServiceSteps),
   };
 });

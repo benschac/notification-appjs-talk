@@ -48,6 +48,8 @@ export function CodeMorphSlide({
   const [isMounted, setIsMounted] = useState(false);
   const [step, setStep] = useState(initialStep);
   const sectionRef = useRef<HTMLElement>(null);
+  const isNotificationServiceSlide = frameDataId === "notification-service-code-frame";
+  const stepMessage = stepMessages[step] ?? subtitle;
 
   useEffect(() => {
     setIsMounted(true);
@@ -178,9 +180,9 @@ export function CodeMorphSlide({
   return (
     <section
       ref={sectionRef}
-      className={
-        layout === "hero" ? styles.magicMoveSectionHero : styles.magicMoveSectionAnalysis
-      }
+      className={`${layout === "hero" ? styles.magicMoveSectionHero : styles.magicMoveSectionAnalysis} ${
+        isNotificationServiceSlide ? styles.magicMoveSectionDependencyInjection : ""
+      }`}
       data-auto-animate
       data-auto-animate-duration="0.7"
       data-auto-animate-easing="cubic-bezier(0.22, 1, 0.36, 1)"
@@ -198,14 +200,14 @@ export function CodeMorphSlide({
         <div className={styles.magicMoveHero}>
           <p className={styles.magicMoveHeroBody}>{subtitle}</p>
           {frame}
-          <p className={styles.magicMoveHeroCaption}>{stepMessages[step]}</p>
+          <p className={styles.magicMoveHeroCaption}>{stepMessage}</p>
         </div>
       ) : (
         <div className={styles.magicMoveLayout}>
           {frame}
           <div className={styles.magicMoveNotes}>
             <p className={styles.magicMoveLabel}>Current point</p>
-            <p className={styles.magicMoveMessage}>{stepMessages[step]}</p>
+            <p className={styles.magicMoveMessage}>{stepMessage}</p>
             <p className={styles.magicMoveAnalysisBody}>{subtitle}</p>
             <ul className={styles.magicMoveChecklist}>
               <li>Step 1: direct notification calls live inside the mutation</li>

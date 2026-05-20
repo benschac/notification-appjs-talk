@@ -472,12 +472,147 @@
 
 .solutionMermaidDiagram {
   width: min(100%, 76rem);
-  margin-top: 1.25rem;
+  margin: 0;
   padding: 1.25rem;
 }
 
 .solutionMermaidDiagram svg {
   max-height: 58vh;
+}
+
+.solutionDiagramLayout {
+  width: min(100%, 78rem);
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+}
+
+.solutionDiagramTitle {
+  margin: 0;
+  color: #fbf8f2;
+  font-size: clamp(2.6rem, 5vw, 5rem);
+  line-height: 0.95;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.provenTechnologyLayout {
+  display: grid;
+  gap: 2rem;
+  justify-items: center;
+  width: min(100%, 74rem);
+}
+
+.provenTechnologyTitle {
+  max-width: 18ch;
+  margin: 0;
+  color: #fbf8f2;
+  font-size: clamp(3rem, 5.8vw, 6rem);
+  line-height: 0.95;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.provenTechnologyLogos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  align-items: stretch;
+  width: min(100%, 58rem);
+}
+
+.provenTechnologyLogo {
+  display: block;
+  width: 100%;
+  height: 10rem;
+  padding: 1.35rem;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3);
+  object-fit: contain;
+}
+
+.eventBusTeachingLayout {
+  display: grid;
+  gap: 1.15rem;
+  justify-items: center;
+  width: min(100%, 92rem);
+}
+
+.eventBusTeachingTitle {
+  max-width: 18ch;
+  margin: 0;
+  color: #fbf8f2;
+  font-size: clamp(3rem, 5.8vw, 6rem);
+  line-height: 0.95;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.eventBusTeachingCode {
+  width: min(100%, 86rem);
+  padding: 0.9rem 1rem;
+  overflow-x: hidden;
+}
+
+.eventBusTeachingCode pre {
+  width: 100%;
+  min-width: 0;
+  font-size: clamp(0.72rem, 0.95vw, 0.92rem);
+  line-height: 1.22;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.eventRegistryLayout {
+  display: grid;
+  gap: 1.35rem;
+  width: min(100%, 78rem);
+}
+
+.eventRegistryTitle {
+  max-width: 18ch;
+  margin: 0;
+  color: #fbf8f2;
+  font-size: clamp(3rem, 5.6vw, 5.8rem);
+  line-height: 0.95;
+  text-align: left;
+  text-wrap: balance;
+}
+
+.eventRegistryBody {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.44fr);
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.eventRegistryCode {
+  width: 100%;
+  padding: 1.15rem 1.25rem;
+}
+
+.eventRegistryCode pre {
+  font-size: clamp(0.58rem, 0.86vw, 0.82rem);
+  line-height: 1.28;
+}
+
+.eventRegistryNotes {
+  display: grid;
+  gap: 0.75rem;
+  align-content: center;
+}
+
+.eventRegistryNotes p {
+  margin: 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fbf8f2;
+  font-size: clamp(1rem, 1.45vw, 1.25rem);
+  font-weight: 700;
+  line-height: 1.15;
 }
 
 .derivedNotificationDiagram {
@@ -746,6 +881,32 @@
   padding-right: 1.25rem;
 }
 
+.magicMoveSectionDependencyInjection {
+  transform: translateY(-4.25rem);
+}
+
+.magicMoveSectionDependencyInjection .magicMoveHero {
+  gap: 0.85rem;
+}
+
+.magicMoveSectionDependencyInjection .sectionTitle {
+  max-width: 16ch;
+  margin-bottom: 0;
+}
+
+.magicMoveSectionDependencyInjection .magicMoveHeroBody {
+  max-width: 46rem;
+}
+
+.magicMoveSectionDependencyInjection .magicMoveFrameHero {
+  max-width: min(100%, 70rem);
+}
+
+.magicMoveSectionDependencyInjection .magicMoveFrame pre {
+  font-size: clamp(0.66rem, 1vw, 0.94rem);
+  line-height: 1.22;
+}
+
 .magicMoveSectionAnalysis {
   padding-right: 0.5rem;
 }
@@ -925,6 +1086,23 @@
 .staticHighlightedCodeBlock pre {
   font-size: clamp(1.15rem, 2vw, 1.65rem);
   line-height: 1.42;
+}
+
+.staticHighlightedCodeBlock.eventBusTeachingCode {
+  width: min(100%, 90rem);
+  max-width: 90rem;
+  padding: 0.9rem 1rem;
+  overflow-x: hidden;
+}
+
+.staticHighlightedCodeBlock.eventBusTeachingCode pre {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  font-size: clamp(0.72rem, 0.95vw, 0.92rem);
+  line-height: 1.22;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .magicMoveFrameAnalysis pre {
