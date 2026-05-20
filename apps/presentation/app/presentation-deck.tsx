@@ -2,7 +2,8 @@
 
 import { Deck } from "@revealjs/react";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { animate } from "animejs";
 import Notes from "reveal.js/plugin/notes";
 import { ShikiMagicMovePrecompiled } from "shiki-magic-move/react";
 import type { RevealApi, RevealConfig, RevealPlugin, RevealPluginFactory } from "reveal.js";
@@ -85,7 +86,7 @@ const notificationTypes = [
   "giver_no_show",
   "nudge_recipient",
   "post_deleted",
-  "gift_items_updated",
+  "item_bid_received",
   "chat_message",
   "comment_received",
   "comment_reply_received",
@@ -154,6 +155,127 @@ const notificationTypes = [
   "publish_post_approved",
   "publish_post_rejected",
 ];
+
+const CLOUD_ANIMATION_DURATION = 1100;
+
+function NotificationTypeCloudSection({ types }: { types: string[] }) {
+  const uniqueTypes = useMemo(() => Array.from(new Set(types)), [types]);
+  const sectionRef = useRef<HTMLElement>(null);
+  const cloudRef = useRef<HTMLDivElement>(null);
+  const animationRef = useRef<ReturnType<typeof animate> | null>(null);
+  const hasTriggeredRef = useRef(false);
+
+  const resetBubbles = useCallback(() => {
+    const cloud = cloudRef.current;
+
+    if (!cloud) {
+      return;
+    }
+
+    for (const child of Array.from(cloud.children)) {
+      if (!(child instanceof HTMLSpanElement)) {
+        continue;
+      }
+
+      child.style.opacity = "0";
+      child.style.transform =
+        "translate3d(0px, 36px, -180px) rotateX(8deg) rotateY(2deg) scale(0.68)";
+      child.style.filter = "blur(8px)";
+    }
+  }, []);
+
+  const launchAnimation = useCallback(() => {
+    const cloud = cloudRef.current;
+
+    if (!cloud) {
+      return;
+    }
+
+    const bubbles = Array.from(cloud.children).filter(
+      (child): child is HTMLSpanElement => child instanceof HTMLSpanElement,
+    );
+
+    animationRef.current = animate(bubbles, {
+      autoplay: false,
+      duration: CLOUD_ANIMATION_DURATION,
+      delay: 20,
+      easing: "out-cubic",
+      opacity: [0, 1],
+      translateY: [36, 0],
+      translateZ: [-180, 0],
+      rotateX: [8, 0],
+      rotateY: [2, 0],
+      scale: [0.68, 1],
+      filter: ["blur(8px)", "blur(0px)"],
+    });
+
+    const hfAnimeHost = window as Window & { __hfAnime?: ReturnType<typeof animate>[] };
+    hfAnimeHost.__hfAnime = hfAnimeHost.__hfAnime || [];
+    hfAnimeHost.__hfAnime.push(animationRef.current);
+
+    animationRef.current.pause();
+    animationRef.current.seek(0);
+    animationRef.current.play();
+  }, []);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+
+    if (!section) {
+      return;
+    }
+
+    const syncSectionState = () => {
+      const isPresent = section.classList.contains("present");
+
+      if (!isPresent) {
+        hasTriggeredRef.current = false;
+        animationRef.current?.pause();
+        return;
+      }
+
+      if (!hasTriggeredRef.current) {
+        resetBubbles();
+        hasTriggeredRef.current = true;
+        launchAnimation();
+        return;
+      }
+
+      resetBubbles();
+    };
+
+    const observer = new MutationObserver(() => {
+      syncSectionState();
+    });
+    observer.observe(section, { attributes: true, attributeFilter: ["class"] });
+    syncSectionState();
+
+    return () => {
+      observer.disconnect();
+      animationRef.current?.pause();
+    };
+  }, [launchAnimation, resetBubbles]);
+
+  return (
+    <section ref={sectionRef} className={styles.notificationTypeScaleSlide}>
+      <div className={styles.notificationTypeForeground}>
+        <h2 className={styles.notificationTypeTitle}>
+          What happens when you have 84 notification type values?
+        </h2>
+      </div>
+      <div ref={cloudRef} className={styles.notificationTypeCloud}>
+        {uniqueTypes.map((type, index) => (
+          <span key={`${type}-${index}`} className={styles.notificationTypeBubble}>
+            {type}
+          </span>
+        ))}
+      </div>
+      <aside className="notes">
+      And as the application grew, we got more notification types. In staying true to our mission, we want to make sure that our users get the notifications that they actually want, because if they end up turning notifications off, the app loses a lot of value. So we want to be really granular. We want to give our users as much control as possible so that they get the information that they need to successfully transact in person and in their communities. And each one of these types represents a different action that the system takes in that journey from initial bid to I'm here at the pick up location, and most importantly, everything that can happen in between.
+      </aside>
+    </section>
+  );
+}
 
 function initializeExternalDocFrame(element: HTMLElement) {
   const existingIframe = element.querySelector("iframe");
@@ -306,8 +428,8 @@ function ProgressiveCodeFrame({
     <section ref={sectionRef}>
       <div className={styles.progressiveCodeLayout}>
         <div className={styles.progressiveCodeCopy}>
-          <p className={styles.eyebrow}>The first version</p>
-          <h2 className={styles.sectionTitle}>This code was reasonable</h2>
+          <p className={styles.eyebrow}>V0</p>
+          <h2 className={styles.sectionTitle}>How it started</h2>
         </div>
         <div
           data-id="event-bus-code-frame"
@@ -337,9 +459,22 @@ function ProgressiveCodeFrame({
           data-code-step={index + 1}
         />
       ))}
-        <aside className="notes">
-        You start with your business logic. Then you add your notification.Life is good. Problem solved. Then you realize that a bunch of your users don't have notifs on, so you're going to send them an email. But then you realize they might have their emails off, so then you put it in the in-app notifications. Then you realize that in-app notifs are getting really noisy, so you should probably just append this really important message to their chat with the other user. Then you realize you should probably be measuring this in your analytics tool. But also, the rest of your team might want to see this on Slack, so we're going to add a webhook too.
-        </aside>
+      <aside className="notes">
+        <p>
+          You start with your business logic. A user does a thing. Update our
+          database. And great. Problem solved. Right, but we&apos;re going to
+          need a notification. Alright,
+        </p>
+        <ul>
+          <li>Not so bad. But not everyone has push notifications enabled, so we got to add an email.</li>
+          <li>But not everyone has their email enabled, so we should probably add this to an app inbox as well.</li>
+          <li>But when you&apos;re really active, the In-App inbox gets kind of noisy, so we should also probably mirror these important pick-up notifications in your chat with the person that you&apos;re going to pick up from.</li>
+          <li>And then you probably need to measure this too with your analytics tool.</li>
+          <li>Oh, and product, they want to get notified when someone purchases something or gets a bid accepted over $20.</li>
+          <li>And while we&apos;re at it, let&apos;s also just have webhooks in here as well, because who knows if we&apos;re going to have to notify anyone else about this event.</li>
+          <li>Oh, and you know, Product was thinking about having a live event get triggered here. I don&apos;t know why, but let&apos;s just do that too.</li>
+        </ul>
+      </aside>
     </section>
   );
 }
@@ -454,8 +589,7 @@ function EventBusTeachingMorphSlide({
       data-auto-animate-id="typed-event-bus-code"
     >
       <div className={styles.eventBusTeachingLayout}>
-        <p className={styles.eyebrow}>Domain events</p>
-        <h2 className={styles.eventBusTeachingTitle}>Typed Event Bus</h2>
+        <h2 className={styles.eventBusTeachingTitle}>Domain Events</h2>
         <div
           data-id="typed-event-bus-code-frame"
           className={`${styles.magicMoveFrame} ${styles.eventBusTeachingCode}`}
@@ -491,6 +625,90 @@ function EventBusTeachingMorphSlide({
         The point is that the event name owns both the compile-time payload and
         runtime validation.
       </aside>
+    </section>
+  );
+}
+
+function PayloadSchemaMorphSlide({ steps }: { steps: KeyedTokensInfo[] }) {
+  const [isMounted, setIsMounted] = useState(false);
+  const previousStep = Math.max(0, steps.length - 2);
+  const payloadStep = Math.max(0, steps.length - 1);
+  const [step, setStep] = useState(previousStep);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+
+    if (!section) {
+      return;
+    }
+
+    let animationFrame = 0;
+
+    const syncSectionState = () => {
+      window.cancelAnimationFrame(animationFrame);
+
+      if (!section.classList.contains("present")) {
+        setStep(previousStep);
+        return;
+      }
+
+      setStep(previousStep);
+      animationFrame = window.requestAnimationFrame(() => {
+        setStep(payloadStep);
+      });
+    };
+
+    const observer = new MutationObserver(syncSectionState);
+    observer.observe(section, { attributes: true, attributeFilter: ["class"] });
+    syncSectionState();
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      observer.disconnect();
+    };
+  }, [payloadStep, previousStep]);
+
+  return (
+    <section
+      ref={sectionRef}
+      className={styles.centeredContentSlide}
+      data-auto-animate
+      data-auto-animate-duration="0.7"
+      data-auto-animate-easing="cubic-bezier(0.22, 1, 0.36, 1)"
+      data-auto-animate-id="typed-event-bus-code"
+    >
+      <div className={styles.eventBusTeachingLayout}>
+        <div>
+          <p className={styles.eyebrow}>Payload schema</p>
+          <h2 className={styles.eventRegistryTitle}>
+            The payload contract is a Zod schema.
+          </h2>
+        </div>
+        <div
+          data-id="typed-event-bus-code-frame"
+          className={`${styles.magicMoveFrame} ${styles.eventBusTeachingCode} ${styles.payloadSchemaCode}`}
+        >
+          {isMounted ? (
+            <ShikiMagicMovePrecompiled
+              steps={steps}
+              step={step}
+              animate
+              options={{
+                duration: 650,
+                lineNumbers: true,
+                stagger: 0.16,
+              }}
+            />
+          ) : (
+            <div className={styles.magicMovePlaceholder} />
+          )}
+        </div>
+      </div>
     </section>
   );
 }
@@ -556,6 +774,8 @@ export function PresentationDeck({
     () => ({
       controlsLayout: "edges",
       hash: true,
+      keyboard: true,
+      keyboardCondition: null,
       mermaid: {
         securityLevel: "strict",
         startOnLoad: false,
@@ -622,8 +842,7 @@ export function PresentationDeck({
         <p className={styles.eyebrow}>App.js Conf 2026</p>
         <h1 className={styles.heroTitle}>Emit Once, Notify Everywhere</h1>
         <aside className="notes">
-          Frame this as a production React Native story, not a backend
-          architecture lecture.
+        I just wanted to thank a software mansion for having me come. I'm so grateful for the opportunity to speak at App.js Conf 2026. It's an honor to be here.
         </aside>
       </section>
 
@@ -633,7 +852,7 @@ export function PresentationDeck({
             <p className={styles.eyebrow}>Intro</p>
             <h2 className={styles.bigIdea}>Hi, I&apos;m Ben.</h2>
             <p className={styles.statement}>
-              I&apos;m building Treasure It, a marketplace for P2P hyperlocal commerce
+              I&apos;m the founder of Treasure It, a marketplace for P2P hyperlocal commerce
             </p>
           </div>
           <div className={styles.introImages}>
@@ -651,6 +870,9 @@ export function PresentationDeck({
             />
           </div>
         </div>
+        <aside className="notes">
+        I created Treasure It, which is a platform for local commerce. So if you've ever bought anything off of Facebook Marketplace or Craigslist, And wanted to throw your computer at a wall because of how difficult it is. I want to solve that.
+        </aside>
       </section>
 
       <section>
@@ -658,7 +880,7 @@ export function PresentationDeck({
           <div>
             <p className={styles.eyebrow}>Marketplace reality</p>
             <h2 className={styles.bigIdea}>
-              Notifications take center stage.
+              Notifications take center stage
             </h2>
           </div>
           <Image
@@ -669,6 +891,17 @@ export function PresentationDeck({
             src={notificationIllustration}
           />
         </div>
+        <aside className="notes">
+        So, how do we fix the problem?
+
+
+        We solved it with built-in scheduling platform and inventory management system.
+
+        Because our users are interacting peer-to-peer, The act of "shipping" is a key part of the product. Making sure that the user gets the right notification at the right time for the right item to make sure that they end up at the right place It is what makes the product useful.
+
+        And that's why notifications have taken such a front-row seat in my journey. If a buyer and seller can't meet at the right time and find the right price, the product is useless. My job is to make it painfully hard to miss a pickup. Expo Push Notification Service has been integral in achieving our mission.
+
+        </aside>
       </section>
 
       <section>
@@ -679,7 +912,7 @@ export function PresentationDeck({
           title="Expo Notifications docs"
         />
         <aside className="notes">
-        When I was reading the request for proposals, the only requirement was using an Expo service, and I said, I bet I could sneak a backend talk into a React Native conference. "Hold my notification."
+        I think most of us here have been on This page of the expo docs. When I was reading the request for proposals, the only requirement was using an Expo service, and I said, I bet I could sneak a backend talk into a React Native conference. But, in all seriousness, The documentation, product, And developer experience of Expo Push Notifications has been incredible, And I'm so happy that it exists.
         </aside>
       </section>
 
@@ -697,28 +930,15 @@ export function PresentationDeck({
         title=""
       />
 
-      <section>
-        <p className={styles.eyebrow}>Scale pressure</p>
-        <h2 className={styles.notificationTypeTitle}>
-          What happens when you have 84 different notification type values?
-        </h2>
-        <div className={styles.notificationTypeCloud}>
-          {notificationTypes.map((type, index) => (
-            <span
-              key={`${type}-${index}`}
-              className={`fragment ${styles.notificationTypeBubble}`}
-              data-fragment-index={Math.floor(index / 10)}
-            >
-              {type}
-            </span>
-          ))}
-        </div>
-      </section>
+      <NotificationTypeCloudSection types={notificationTypes} />
 
       <section className={styles.centerQuestionSlide}>
         <h2 className={`${styles.sectionTitle} ${styles.wideQuestionTitle}`}>
           What happens when you need to derive multiple notifications from a single event?
         </h2>
+        <aside className="notes">
+        Sometimes, We end up with notifications that have been derived from another event. So we need this system to be composable so that If we need to drive notifications from existing ones, we can do that without repeating ourselves.
+        </aside>
       </section>
 
       <section className={styles.centeredContentSlide}>
@@ -729,12 +949,18 @@ export function PresentationDeck({
     A --> C["chosen<br/>new recipient"]`}
           className={styles.derivedNotificationDiagram}
         />
+        <aside className="notes">
+        The most straightforward example of this kind of derived event is going to be when you switch a recipient. So let's say you're trying to get something out the door and someone hasn't replied to you. They are MIA, AWOL; you don't hear from them, and there's someone else who wants to take it. You need to tell the person that's unresponsive that they are no longer chosen, and you want to let the new recipient know That they've been chosen and they need to schedule a pickup time. You'd be surprised how often this kind of thing happens.
+        </aside>
       </section>
 
       <section className={styles.centerQuestionSlide}>
         <h2 className={`${styles.sectionTitle} ${styles.wideQuestionTitle}`}>
           What happens when you need to support in-app notifications?
         </h2>
+        <aside className="notes">
+        But sometimes people's phones have a lot of notifications, and it's easy for them to just check the in-app notifications tab. Because we really don't want our users to miss important notifications
+        </aside>
       </section>
 
       <section className={styles.centeredContentSlide}>
@@ -747,12 +973,18 @@ export function PresentationDeck({
             src={mirroredChatImage}
           />
         </div>
+        <aside className="notes">
+        Then, as one does, you become a power user of your own app, and you realize that your in-app notifications are just a mess. There's so much going on between 10 different people coordinating like six different pickups that you're still missing the signal from the noise. So I decided to mirror these notifications as a system message in line with the user that you're chatting with to make the exchange with. That way, it becomes even harder to forget what happened or when you're supposed to be somewhere.
+        </aside>
       </section>
 
       <section className={styles.centerQuestionSlide}>
         <h2 className={`${styles.sectionTitle} ${styles.wideQuestionTitle}`}>
           Oh, and some notifications are only for premium users.
         </h2>
+        <aside className="notes">
+        And we have additional notifications that are only for premium users because, Business and numbers.
+        </aside>
       </section>
 
       <section className={styles.centeredContentSlide}>
@@ -765,6 +997,9 @@ export function PresentationDeck({
             src={preferencesImage}
           />
         </div>
+        <aside className="notes">
+        Users kept telling me over and over again that the platforms today will send you messages that are just noise and spam. And we need to make sure that our users can configure notifications to their heart's desire, that they are in full control, and they'll get the messages that they need. Nothing more, nothing less.
+        </aside>
       </section>
 
       <section className={styles.centeredContentSlide}>
@@ -779,6 +1014,9 @@ export function PresentationDeck({
             src={moosePmImage}
           />
         </div>
+        <aside className="notes">
+        So I do have a coworker who's a pretty no-nonsense product manager. He thinks that all of this should have been done yesterday and you know, just get AI to do it. That's it, it will be fine. He's also convinced that I didn't feed him dinner five minutes ago and that he's starving. But also, you're going to want to know what's happening in the app. Maybe you want to see when a specific kind of purchase is made or when someone keeps dropping out or a pickup was completed. If we're dealing with one side effect and one external system, we should be able to effectively communicate with any external system using the same framework that we're building for our notifications. So, how do we solve this problem? Calmly and thoughtfully,
+        </aside>
       </section>
 
       <section className={styles.centeredContentSlide}>
@@ -794,6 +1032,9 @@ export function PresentationDeck({
             src={cryingImage}
           />
         </div>
+        <aside className="notes">
+        Go to the corner and start crying. And in that moment of panic and desperation, the first thing you start to think of is of course.....
+        </aside>
       </section>
 
       <section>
@@ -803,6 +1044,9 @@ export function PresentationDeck({
           src="https://redux.js.org/introduction/why-rtk-is-redux-today#what-does-the-redux-core-do"
           title="Redux core docs"
         />
+        <aside className="notes">
+        Redux! That's it, that's the solution. That's how we're solving all of our problems. One thing that I really loved about Redux was how explicit the action creators were.
+        </aside>
       </section>
 
       <section>
@@ -813,6 +1057,9 @@ export function PresentationDeck({
           src="https://redux.js.org/usage/reducing-boilerplate#generating-action-creators"
           title="Redux action creators docs"
         />
+        <aside className="notes">
+        Just those beefy all-caps constants telling you exactly what's happening every single time? Made it easy to grab my codebase, made it easy to understand what piece of state was being updated, and yeah, incredibly straightforward and easy to reason about. But more specifically, action creators
+        </aside>
       </section>
 
       <section>
@@ -842,10 +1089,12 @@ export function PresentationDeck({
             <p>It must not include anything else.</p>
           </div>
         </div>
+        <aside className="notes">
+        And more specifically than that, thinking about the flux standard action. These all feel like events that are being broadcast and subscribed to. Which they were
+        </aside>
       </section>
 
       <section>
-        <p className={styles.eyebrow}>Then the language</p>
         <h2 className={styles.reduxDocTitle}>Domain-Driven Design</h2>
         <Image
           alt="Domain-Driven Design book cover"
@@ -853,10 +1102,21 @@ export function PresentationDeck({
           sizes="24rem"
           src={domainDrivenDesignImage}
         />
+        <aside className="notes">
+        Sitting in the corner, I start thinking about this book, Domain-Driven Design. It was published back in 2003.
+
+        Domain-driven design is predicated on the following goals:
+
+        - initiating a creative collaboration between technical and domain experts to iteratively refine a conceptual model that addresses particular domain problems.
+        - basing complex designs on a model of the domain;
+        - placing the project's primary focus on the core domain and domain logic layer;
+
+        And the key idea is that you should be able to model your domain in a way that is easy to understand and easy to reason about.
+
+        </aside>
       </section>
 
       <section className={styles.centeredContentSlide}>
-        <p className={styles.eyebrow}>Then the mechanism</p>
         <h2 className={styles.eventEmitterTitle}>EventEmitter3</h2>
         <div className={styles.eventEmitterLayout}>
           <div>
@@ -881,6 +1141,9 @@ eventBus.on("item.bid.received", trackAnalytics);
 eventBus.emit("item.bid.received", payload);`}</code>
           </pre>
         </div>
+        <aside className="notes">
+        And then how are these different systems are going to connect outside of their boundaries without coupling them together? We don't have a dispatch and an action creator here in our backend, but we do have events, like nodejs events, but also we ended up using event emitter three
+        </aside>
       </section>
 
 
@@ -892,6 +1155,9 @@ eventBus.emit("item.bid.received", payload);`}</code>
           src="https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/"
           title="Parse, don't validate"
         />
+        <aside className="notes">
+        Yeah, so now I realize that I should probably just keep sitting in this corner because I'm getting a lot of good ideas here. And I remember reading this blog post about seven years ago. Wow, 2019. But this blog post was heavily referenced in the Zod docs. And I don't personally write Haskell. But incredible read, and yeah, functional programming is cool.
+        </aside>
       </section>
 
       <section>
@@ -902,6 +1168,9 @@ eventBus.emit("item.bid.received", payload);`}</code>
           src="https://zod.dev/basics?id=parsing-data#parsing-data"
           title="Zod docs"
         />
+        <aside className="notes">
+        And the parse method that is literally the first method in the docs. And this parse method becomes integral, really the bedrock of this system. And is able to provide us with a level of type safety that I couldn't get before. Something close to an introspection layer that you would get from a GraphQL schema. Being able to get those red squiggly lines and trust that you actually have a real type error in a large system becomes worth its weight in gold.
+        </aside>
       </section>
       <section className={styles.fullBleedImageSlide}>
         <Image
@@ -911,10 +1180,16 @@ eventBus.emit("item.bid.received", payload);`}</code>
           sizes="100vw"
           src={saltBaeTypescriptImage}
         />
+        <aside className="notes">
+        And yeah, just think about types like map types and inferring types and all the types, because TypeScript rules. Yeah, I have all these ideas in my head, and my next thought is....
+        </aside>
       </section>
 
       <section className={styles.centeredContentSlide}>
         <h2 className={styles.fullWidthPunchline}>Just steal their ideas.</h2>
+        <aside className="notes">
+        These ideas are great, and if I'm not going to steal them, someone else will.
+        </aside>
       </section>
 
       <section>
@@ -925,6 +1200,9 @@ eventBus.emit("item.bid.received", payload);`}</code>
           sizes="78rem"
           src={vennDiagramImage}
         />
+        <aside className="notes">
+        God, I love a good Venn diagram. Especially when three overlapping parts aren't labeled because, Corporate strategy.
+        </aside>
       </section>
 
       <section className={styles.centeredContentSlide}>
@@ -945,6 +1223,9 @@ eventBus.emit("item.bid.received", payload);`}</code>
             />
           </div>
         </div>
+        <aside className="notes">
+        And there are a lot of companies that do this and a whole slew of other things extremely well, but, Where's the fun in that?
+        </aside>
       </section>
 
       <section className={styles.centeredContentSlide}>
@@ -987,9 +1268,24 @@ eventBus.emit("item.bid.received", payload);`}</code>
             className={styles.solutionMermaidDiagram}
           />
         </div>
+        <aside className="notes">
+        So yeah, obviously the next step is to create a mermaid diagram, because of course that's the next step. And it's really not so bad once we start to break down the system a little more and figure out what our requirements are. Our event bus publishes to a notification handler.Or really any subscriber, That way we can decouple our business logic And services from our side effects. And then from there we can Pass our event to any number of our services that handle our side effects, but most importantly, our notifications. Those are the ones that we deeply care about the most.
+        </aside>
       </section>
 
-      <EventBusTeachingMorphSlide deck={deck} steps={eventBusTeachingStep} />
+      <EventBusTeachingMorphSlide deck={deck} steps={eventBusTeachingStep.slice(0, 3)} />
+      <PayloadSchemaMorphSlide steps={eventBusTeachingStep} />
+
+      <section className={styles.centeredContentSlide}>
+        <div>
+          <p className={styles.eyebrow}>Schema registry</p>
+          <h2 className={styles.bigIdea}>Our contract</h2>
+          <p className={styles.statement}>
+            The event name owns the payload shape, the runtime validation, and
+            the TypeScript type every subscriber sees.
+          </p>
+        </div>
+      </section>
 
       <section className={styles.centeredContentSlide}>
         <div className={styles.eventRegistryLayout}>
@@ -1026,6 +1322,14 @@ eventBus.emit("item.bid.received", payload);`}</code>
         <p className={styles.eyebrow}>Step 1</p>
         <h2 className={styles.sectionTitle}>Emit the event</h2>
         <StaticHighlightedCodeBlock steps={eventEmitStep} />
+      </section>
+
+      <section className={styles.centerQuestionSlide}>
+        <h2 className={styles.sectionTitle}>Standard Action</h2>
+      </section>
+
+      <section className={styles.centerQuestionSlide}>
+        <h2 className={styles.sectionTitle}>A beautiful red squiggle</h2>
       </section>
 
       <section>
@@ -1086,7 +1390,9 @@ eventBus.emit("item.bid.received", payload);`}</code>
           <span>conversation context</span>
         </div>
         <pre className={styles.compactCodeBlock}>
-          <code>{`this.ctx.eventBus.emit(EVENTS.ITEM_INTEREST.FIRST_SHOWN, {
+          <code>{`this.ctx.eventBus.dispatch({
+  type: DOMAIN_EVENTS.ITEM_INTEREST.FIRST_SHOWN,
+  payload: {
   userId,
   userName: interestedUser.name || "there",
   gifterId,
@@ -1095,6 +1401,7 @@ eventBus.emit("item.bid.received", payload);`}</code>
   itemId,
   itemTitle: item.title || undefined,
   shownAt: eventTimestamp,
+  }
 });`}</code>
         </pre>
         <p className={styles.caption}>
@@ -1116,7 +1423,7 @@ eventBus.emit("item.bid.received", payload);`}</code>
   bus --> tap[Mobile tap path]`}
         />
         <pre className={styles.codeBlock}>
-          <code>{`eventBus.emit(DOMAIN_EVENTS.[HERO_EVENT], payload);`}</code>
+          <code>{`eventBus.dispatch({ type: DOMAIN_EVENTS.[HERO_EVENT], payload });`}</code>
         </pre>
       </section>
 

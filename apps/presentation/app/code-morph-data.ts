@@ -154,27 +154,33 @@ async function importantSideEffects() {
   // webhooks, and live updates moved over here
 }`,
   `await bidOnItem(itemId, amount);
-await eventBus.emit(EVENTS.ITEM.BID_RECEIVED, {
-  bidderId,
-  bidderName: bidder.name || "someone",
-  sellerId,
-  giftId,
-  giftTitle,
-  itemId,
-  itemTitle,
-  amount,
-  bidAt: eventTimestamp,
+await eventBus.dispatch({
+  type: DOMAIN_EVENTS.ITEM.BID_RECEIVED,
+  payload: {
+    bidderId,
+    bidderName: bidder.name || "someone",
+    sellerId,
+    giftId,
+    giftTitle,
+    itemId,
+    itemTitle,
+    amount,
+    bidAt: eventTimestamp,
+  },
 });`,
 ];
 
 const eventEmitStep = `await bidOnItem(itemId, amount);
 
-eventBus.emit(EVENTS.ITEM_BID_RECEIVED, {
-  sellerId,
-  bidderId,
-  itemId,
-  amount,
-  bidAt,
+eventBus.dispatch({
+  type: DOMAIN_EVENTS.ITEM.BID_RECEIVED,
+  payload: {
+    sellerId,
+    bidderId,
+    itemId,
+    amount,
+    bidAt,
+  },
 });`;
 
 const notificationServiceSteps = [
@@ -208,13 +214,17 @@ const notificationServiceSteps = [
 
 const eventBusTeachingSteps = [
   `export const domainEventSchemas = {
-  [DOMAIN_EVENTS.GIFT.UPDATED]: {
+  [DOMAIN_EVENTS.ITEM.BID_RECEIVED]: {
+    notification: DOMAIN_EVENTS.ITEM.BID_RECEIVED,
     payload: giftUpdatedSchema,
+    template: updatePushDataSchema,
   },
 } as const;`,
   `export const domainEventSchemas = {
-  [DOMAIN_EVENTS.GIFT.UPDATED]: {
+  [DOMAIN_EVENTS.ITEM.BID_RECEIVED]: {
+    notification: DOMAIN_EVENTS.ITEM.BID_RECEIVED,
     payload: giftUpdatedSchema,
+    template: updatePushDataSchema,
   },
 } as const;
 
@@ -233,11 +243,23 @@ export type DomainEvents = {
     return this.emitter.emit(event, validatedPayload);
   }
 }`,
+  `const payload = z.object({
+  threadId: z.string(),
+  offerEventId: z.string(),
+  acceptingProfileId: z.string(),
+  buyerProfileId: z.string(),
+  sellerProfileId: z.string(),
+  buyerReserveLedgerId: z.string(),
+  sellerReserveLedgerId: z.string(),
+  buyerConsumeLedgerId: z.string().nullable(),
+  sellerConsumeLedgerId: z.string().nullable(),
+  activatedAt: z.date(),
+});`,
 ];
 
 const eventRegistryStep = `export const domainEventSchemas = {
-  [DOMAIN_EVENTS.GIFT.UPDATED]: {
-    notification: NOTIFICATION_TYPES.GIFT_ITEMS_UPDATED,
+  [DOMAIN_EVENTS.ITEM.BID_RECEIVED]: {
+    notification: DOMAIN_EVENTS.ITEM.BID_RECEIVED,
     payload: giftUpdatedSchema,
     template: updatePushDataSchema,
   },

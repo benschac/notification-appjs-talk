@@ -136,8 +136,20 @@
   text-wrap: balance;
 }
 
+.notificationTypeScaleSlide {
+  position: relative;
+  isolation: isolate;
+  min-height: min(72vh, 49rem);
+  padding: 0 0.2rem;
+}
+
+.notificationTypeForeground {
+  position: relative;
+  z-index: 3;
+}
+
 .notificationTypeTitle {
-  max-width: 18ch;
+  max-width: 30ch;
   margin: 0 0 1.2rem;
   font-size: clamp(2.5rem, 5vw, 4.8rem);
   line-height: 0.96;
@@ -149,25 +161,33 @@
 }
 
 .notificationTypeCloud {
+  position: relative;
+  margin-top: 0.85rem;
+  margin-left: -1.4rem;
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.34rem;
-  width: min(100%, 72rem);
-  max-height: 24rem;
-  overflow: hidden;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.24rem 0.28rem;
+  width: calc(100% + 2.8rem);
+  overflow: visible;
+  transform-style: preserve-3d;
+  perspective: 900px;
+  pointer-events: none;
 }
 
 .notificationTypeBubble {
   display: inline-flex;
   align-items: center;
-  min-height: 1.7rem;
-  padding: 0.28rem 0.48rem;
+  min-height: 1.45rem;
+  padding: 0.2rem 0.36rem;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.06);
   color: #fbf8f2;
   font-family: "IBM Plex Mono", "SFMono-Regular", "Menlo", monospace;
-  font-size: clamp(0.48rem, 0.74vw, 0.74rem);
+  font-size: clamp(0.42rem, 0.62vw, 0.62rem);
   line-height: 1;
   white-space: nowrap;
 }
@@ -562,6 +582,16 @@
   line-height: 1.22;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+.payloadSchemaCode {
+  min-height: 24rem;
+  overflow-y: visible;
+}
+
+.payloadSchemaCode pre {
+  font-size: clamp(0.6rem, 0.82vw, 0.8rem);
+  line-height: 1.12;
 }
 
 .eventBusTeachingCaption {

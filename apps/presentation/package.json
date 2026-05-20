@@ -17,6 +17,7 @@
     "@trpc/client": "^11.16.0",
     "@trpc/server": "^11.16.0",
     "@trpc/tanstack-react-query": "^11.16.0",
+    "animejs": "^4.4.1",
     "client-only": "^0.0.1",
     "cose-base": "^2.2.0",
     "layout-base": "^2.0.1",

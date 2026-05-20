@@ -170,8 +170,7 @@ export function CodeMorphSlide({
           />
         ))}
         <aside className="notes">
-          Let the code carry the transition from scattered side effects into a
-          single event boundary.
+        When you start thinking that this isn't the primary use case, all these are just side effects. Something that I'd expect in a use effect hook, or maybe a redux thunk. We're making calls to systems that we don't control outside of our core business logic.
         </aside>
       </section>
     );
