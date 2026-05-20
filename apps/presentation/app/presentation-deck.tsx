@@ -374,6 +374,127 @@ function StaticHighlightedCodeBlock({
   );
 }
 
+const eventBusTeachingMessages = [
+  "A domain event name starts in the schema registry.",
+  "That registry becomes the source of truth for the TypeScript payload map.",
+  "The event name selects the payload type at compile time, then the same schema validates it at runtime.",
+];
+
+function EventBusTeachingMorphSlide({
+  deck,
+  steps,
+}: {
+  deck: RevealDeck | null;
+  steps: KeyedTokensInfo[];
+}) {
+  const [isMounted, setIsMounted] = useState(false);
+  const [step, setStep] = useState(0);
+  const sectionRef = useRef<HTMLElement>(null);
+  const currentMessage = eventBusTeachingMessages[step] ?? eventBusTeachingMessages[0];
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!deck || !sectionRef.current) {
+      return;
+    }
+
+    const section = sectionRef.current;
+
+    const syncStep = (event: RevealEvent, direction: "forward" | "backward") => {
+      const fragment = event.fragment;
+
+      if (!fragment || fragment.closest("section") !== section) {
+        return;
+      }
+
+      const nextStep = Number(fragment.getAttribute("data-code-step"));
+
+      if (!Number.isFinite(nextStep)) {
+        return;
+      }
+
+      setStep(direction === "forward" ? nextStep : Math.max(0, nextStep - 1));
+    };
+
+    const handleFragmentShown = (event: RevealEvent) => {
+      syncStep(event, "forward");
+    };
+
+    const handleFragmentHidden = (event: RevealEvent) => {
+      syncStep(event, "backward");
+    };
+
+    const handleSlideChanged = (event: RevealEvent) => {
+      if (event.currentSlide === section) {
+        setStep(0);
+      }
+    };
+
+    deck.on("fragmentshown", handleFragmentShown);
+    deck.on("fragmenthidden", handleFragmentHidden);
+    deck.on("slidechanged", handleSlideChanged);
+
+    return () => {
+      deck.off("fragmentshown", handleFragmentShown);
+      deck.off("fragmenthidden", handleFragmentHidden);
+      deck.off("slidechanged", handleSlideChanged);
+    };
+  }, [deck]);
+
+  return (
+    <section
+      ref={sectionRef}
+      className={styles.centeredContentSlide}
+      data-auto-animate
+      data-auto-animate-duration="0.7"
+      data-auto-animate-easing="cubic-bezier(0.22, 1, 0.36, 1)"
+      data-auto-animate-id="typed-event-bus-code"
+    >
+      <div className={styles.eventBusTeachingLayout}>
+        <p className={styles.eyebrow}>Domain events</p>
+        <h2 className={styles.eventBusTeachingTitle}>Typed Event Bus</h2>
+        <div
+          data-id="typed-event-bus-code-frame"
+          className={`${styles.magicMoveFrame} ${styles.eventBusTeachingCode}`}
+        >
+          {isMounted ? (
+            <ShikiMagicMovePrecompiled
+              steps={steps}
+              step={step}
+              animate
+              options={{
+                duration: 650,
+                lineNumbers: true,
+                stagger: 0.16,
+              }}
+            />
+          ) : (
+            <div className={styles.magicMovePlaceholder} />
+          )}
+        </div>
+        <p className={styles.eventBusTeachingCaption}>{currentMessage}</p>
+      </div>
+      {steps.slice(1).map((_, index) => (
+        <span
+          key={index + 1}
+          aria-hidden="true"
+          className={`fragment custom ${styles.codeStepFragment}`}
+          data-code-step={index + 1}
+        />
+      ))}
+      <aside className="notes">
+        Press forward through the morph: first show the domain event registry,
+        then the inferred DomainEvents map, then land on the typed emit method.
+        The point is that the event name owns both the compile-time payload and
+        runtime validation.
+      </aside>
+    </section>
+  );
+}
+
 export function PresentationDeck({
   codeMorphSteps,
   directSideEffectSteps,
@@ -868,17 +989,7 @@ eventBus.emit("item.bid.received", payload);`}</code>
         </div>
       </section>
 
-      <section className={styles.centeredContentSlide}>
-        <div className={styles.eventBusTeachingLayout}>
-          <h2 className={styles.eventBusTeachingTitle}>
-            Typed Event Bus
-          </h2>
-          <StaticHighlightedCodeBlock
-            className={styles.eventBusTeachingCode}
-            steps={eventBusTeachingStep}
-          />
-        </div>
-      </section>
+      <EventBusTeachingMorphSlide deck={deck} steps={eventBusTeachingStep} />
 
       <section className={styles.centeredContentSlide}>
         <div className={styles.eventRegistryLayout}>

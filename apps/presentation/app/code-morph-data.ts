@@ -206,9 +206,23 @@ const notificationServiceSteps = [
 });`,
 ]; 
 
-const eventBusTeachingStep = `class TypedEventBus {
-  private emitter = new EventEmitter();
+const eventBusTeachingSteps = [
+  `export const domainEventSchemas = {
+  [DOMAIN_EVENTS.GIFT.UPDATED]: {
+    payload: giftUpdatedSchema,
+  },
+} as const;`,
+  `export const domainEventSchemas = {
+  [DOMAIN_EVENTS.GIFT.UPDATED]: {
+    payload: giftUpdatedSchema,
+  },
+} as const;
 
+export type DomainEvents = {
+  [K in keyof typeof domainEventSchemas]:
+    z.infer<(typeof domainEventSchemas)[K]["payload"]>;
+};`,
+  `class TypedEventBus {
   emit<K extends keyof typeof domainEventSchemas>(
     event: K,
     payload: DomainEvents[K]
@@ -218,7 +232,8 @@ const eventBusTeachingStep = `class TypedEventBus {
 
     return this.emitter.emit(event, validatedPayload);
   }
-}`;
+}`,
+];
 
 const eventRegistryStep = `export const domainEventSchemas = {
   [DOMAIN_EVENTS.GIFT.UPDATED]: {
@@ -270,7 +285,7 @@ export const getTalkCodeSteps = cache(async (): Promise<TalkCodeSteps> => {
   return {
     codeMorphSteps: compileCodeSteps(highlighter, codeSteps),
     directSideEffectSteps: compileCodeSteps(highlighter, directSideEffectSteps),
-    eventBusTeachingStep: compileCodeSteps(highlighter, [eventBusTeachingStep]),
+    eventBusTeachingStep: compileCodeSteps(highlighter, eventBusTeachingSteps),
     eventRegistryStep: compileCodeSteps(highlighter, [eventRegistryStep]),
     eventEmitStep: compileCodeSteps(highlighter, [eventEmitStep]),
     notificationServiceSteps: compileCodeSteps(highlighter, notificationServiceSteps),

@@ -564,6 +564,17 @@
   overflow-wrap: anywhere;
 }
 
+.eventBusTeachingCaption {
+  max-width: 58rem;
+  margin: 0;
+  color: #f9f3ea;
+  font-size: clamp(1rem, 1.5vw, 1.22rem);
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  text-wrap: balance;
+}
+
 .eventRegistryLayout {
   display: grid;
   gap: 1.35rem;
