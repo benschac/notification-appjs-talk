@@ -41,6 +41,28 @@
   text-wrap: balance;
 }
 
+.centerQuestionSlide {
+  display: grid !important;
+  place-items: center;
+  min-height: min(70vh, 48rem);
+  text-align: center;
+}
+
+.centerQuestionSlide .sectionTitle {
+  margin: 0 auto;
+}
+
+.centeredContentSlide {
+  display: grid !important;
+  min-height: min(72vh, 49rem);
+  place-items: center;
+}
+
+.centeredContentSlide > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 .cardGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -173,24 +195,112 @@
 }
 
 .cornerCryLayout {
-  width: min(100%, 70rem);
-  min-height: 64vh;
+  width: min(100%, 66rem);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(0, 0.86fr) minmax(18rem, 29rem);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 0.95fr);
   gap: 2.5rem;
   align-items: center;
+  justify-items: center;
 }
 
 .cornerCryImage {
-  width: min(100%, 29rem);
+  width: auto;
   height: auto;
-  max-height: 56vh;
+  max-width: min(100%, 30rem);
+  max-height: min(58vh, 33rem);
   justify-self: center;
   align-self: center;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 1.25rem;
   box-shadow: 0 30px 90px rgba(0, 0, 0, 0.42);
+  object-fit: contain;
+}
+
+.chatNotificationLayout {
+  width: min(100%, 68rem);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 0.96fr) minmax(18rem, 0.74fr);
+  gap: 2.4rem;
+  align-items: center;
+  justify-items: center;
+}
+
+.chatNotificationTitle {
+  max-width: 12ch;
+  margin: 0;
+  font-size: clamp(3rem, 6vw, 5.8rem);
+  line-height: 0.96;
+  text-wrap: balance;
+}
+
+.chatNotificationImage {
+  width: auto;
+  height: auto;
+  max-width: min(100%, 24rem);
+  max-height: 68vh;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 1.4rem;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.38);
+  object-fit: contain;
+}
+
+.preferencesLayout {
+  width: min(100%, 68rem);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(18rem, 0.75fr);
+  gap: 2.5rem;
+  align-items: center;
+  justify-items: center;
+}
+
+.preferencesTitle {
+  max-width: 12ch;
+  margin: 0;
+  font-size: clamp(3rem, 6vw, 5.8rem);
+  line-height: 0.96;
+  text-wrap: balance;
+}
+
+.preferencesImage {
+  width: auto;
+  height: auto;
+  max-width: min(100%, 24rem);
+  max-height: min(68vh, 39rem);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 1.4rem;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.38);
+  object-fit: contain;
+}
+
+.pmAnalyticsLayout {
+  width: min(100%, 72rem);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 1fr);
+  gap: 2.75rem;
+  align-items: center;
+  justify-items: center;
+}
+
+.pmAnalyticsTitle {
+  max-width: 13ch;
+  margin: 0;
+  font-size: clamp(2.8rem, 5.4vw, 5.5rem);
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.pmAnalyticsImage {
+  width: auto;
+  height: auto;
+  max-width: min(100%, 30rem);
+  max-height: min(68vh, 40rem);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 1.4rem;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.38);
   object-fit: contain;
 }
 
@@ -502,14 +612,14 @@
 
 .eventEmitterLayout {
   display: grid;
-  grid-template-columns: minmax(0, 0.72fr) minmax(24rem, 1fr);
+  grid-template-columns: minmax(14rem, 0.38fr) minmax(0, 1.72fr);
   gap: 1.5rem;
   align-items: start;
-  width: min(100%, 76rem);
+  width: min(100%, 98rem);
 }
 
 .eventEmitterStatement {
-  max-width: 26rem;
+  max-width: 22rem;
   margin: 0 0 1.2rem;
   color: #fbf8f2;
   font-size: clamp(1.25rem, 2.2vw, 2rem);
@@ -539,24 +649,30 @@
 .eventEmitterCode {
   width: 100%;
   margin: 0;
-  padding: 1.2rem;
-  overflow-x: auto;
+  padding: 1rem 1.1rem;
+  overflow: visible;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 1.25rem;
   background: rgba(5, 8, 19, 0.92);
   color: #f6f4ef;
   font-family: "IBM Plex Mono", "SFMono-Regular", "Menlo", monospace;
-  font-size: clamp(0.85rem, 1.1vw, 1.05rem);
-  line-height: 1.55;
+  font-size: clamp(0.64rem, 0.78vw, 0.8rem);
+  line-height: 1.42;
+}
+
+.eventEmitterCode code,
+.eventEmitterCode code.hljs {
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere;
 }
 
 .fullWidthPunchline {
-  width: 100%;
+  max-width: 14ch;
   margin: 0;
   color: #fbf8f2;
   font-size: clamp(5.2rem, 11vw, 12rem);
   line-height: 0.9;
-  text-align: left;
+  text-align: center;
   text-wrap: balance;
 }
 
@@ -747,7 +863,7 @@
   display: block;
   width: 100%;
   height: min(60vh, 36rem);
-  object-fit: cover;
+  object-fit: contain;
   object-position: top center;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 0.75rem;

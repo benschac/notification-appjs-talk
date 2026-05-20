@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import "reveal.js/reveal.css";
 import "reveal.js/theme/black.css";
+import "reveal.js/plugin/highlight/monokai.css";
 import "shiki-magic-move/style.css";
 
 import "../styles/global.css";

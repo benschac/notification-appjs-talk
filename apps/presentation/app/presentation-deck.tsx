@@ -12,10 +12,14 @@ import {
   createRevealAnythingPlugin,
   type AnythingRevealConfig,
 } from "./reveal-anything-plugin";
+import { CodeMorphSlide } from "./code-morph-slide";
 import cryingImage from "./crying.png";
 import domainDrivenDesignImage from "./ddd.jpeg";
 import headshotImage from "./headshot.jpeg";
+import mirroredChatImage from "./mirrored_chat.jpeg";
+import moosePmImage from "./moose_pm.png";
 import notificationIllustration from "./notif_illistration.png";
+import preferencesImage from "./preferences.png";
 import saltBaeTypescriptImage from "./saltbaets.jpeg";
 import treasureBagImage from "./Longarms.png";
 import vennDiagramImage from "./vendiagram.png";
@@ -52,6 +56,14 @@ type MermaidRevealConfig = RevealConfig &
 };
 
 type DeckPlugin = RevealPlugin | RevealPluginFactory;
+
+function MermaidBlock({ chart, className = "" }: { chart: string; className?: string }) {
+  return (
+    <div className={`mermaid ${styles.mermaidDiagram} ${className}`} data-mermaid-source={chart}>
+      <pre>{chart}</pre>
+    </div>
+  );
+}
 
 const notificationTypes = [
   "interest_shown",
@@ -355,10 +367,12 @@ function StaticHighlightedCodeBlock({ steps }: { steps: KeyedTokensInfo[] }) {
 }
 
 export function PresentationDeck({
+  codeMorphSteps,
   directSideEffectSteps,
   eventEmitStep,
   snapshot,
 }: {
+  codeMorphSteps: KeyedTokensInfo[];
   directSideEffectSteps: KeyedTokensInfo[];
   eventEmitStep: KeyedTokensInfo[];
   snapshot: TalkSnapshot;
@@ -371,6 +385,7 @@ export function PresentationDeck({
     let isCancelled = false;
 
     const loadPlugins = async () => {
+      const { default: RevealHighlight } = await import("reveal.js/plugin/highlight");
       const { default: RevealMermaid } = await import(
         "reveal.js-mermaid-plugin/plugin/mermaid/mermaid.esm.js"
       );
@@ -379,7 +394,7 @@ export function PresentationDeck({
         return;
       }
 
-      setPlugins([Notes, RevealMermaid, createRevealAnythingPlugin()]);
+      setPlugins([Notes, RevealHighlight, RevealMermaid, createRevealAnythingPlugin()]);
     };
 
     void loadPlugins();
@@ -419,7 +434,23 @@ export function PresentationDeck({
           tertiaryColor: "#0d1933",
         },
       },
-      mermaidPlugin: {},
+      mermaidPlugin: {
+        beforeRender(element) {
+          if (!(element instanceof HTMLElement)) {
+            return;
+          }
+
+          const source = element.dataset.mermaidSource;
+
+          if (!source) {
+            return;
+          }
+
+          const pre = document.createElement("pre");
+          pre.textContent = source;
+          element.replaceChildren(pre);
+        },
+      },
       anything: [
         {
           className: "external-doc",
@@ -519,6 +550,18 @@ export function PresentationDeck({
 
       <ProgressiveCodeFrame deck={deck} steps={directSideEffectSteps} />
 
+      <CodeMorphSlide
+        deck={deck}
+        frameDataId="event-bus-code-frame"
+        fragmentSteps={[2]}
+        initialStep={1}
+        layout="hero"
+        showCopy={false}
+        steps={codeMorphSteps}
+        subtitle=""
+        title=""
+      />
+
       <section>
         <p className={styles.eyebrow}>Scale pressure</p>
         <h2 className={styles.notificationTypeTitle}>
@@ -537,23 +580,73 @@ export function PresentationDeck({
         </div>
       </section>
 
-      <section>
-        <p className={styles.eyebrow}>Scale pressure</p>
+      <section className={styles.centerQuestionSlide}>
         <h2 className={`${styles.sectionTitle} ${styles.wideQuestionTitle}`}>
-          What happens when you need to derive different notifications from a single event?
+          What happens when you need to derive multiple notifications from a single event?
         </h2>
       </section>
 
-      <section>
+      <section className={styles.centeredContentSlide}>
         <p className={styles.eyebrow}>Derived notifications</p>
-        <div className={`mermaid ${styles.mermaidDiagram} ${styles.derivedNotificationDiagram}`}>
-          <pre>{`flowchart LR
+        <MermaidBlock
+          chart={`flowchart LR
     A["recipient.switched"] --> B["removed_recipient<br/>old recipient"]
-    A --> C["chosen<br/>new recipient"]`}</pre>
+    A --> C["chosen<br/>new recipient"]`}
+          className={styles.derivedNotificationDiagram}
+        />
+      </section>
+
+      <section className={styles.centerQuestionSlide}>
+        <h2 className={`${styles.sectionTitle} ${styles.wideQuestionTitle}`}>
+          What happens when you need to support in-app notifications?
+        </h2>
+      </section>
+
+      <section className={styles.centeredContentSlide}>
+        <div className={styles.chatNotificationLayout}>
+          <h2 className={styles.chatNotificationTitle}>Or in chat notifications</h2>
+          <Image
+            alt="Treasure It in-chat notification timeline"
+            className={styles.chatNotificationImage}
+            sizes="32rem"
+            src={mirroredChatImage}
+          />
         </div>
       </section>
 
-      <section>
+      <section className={styles.centerQuestionSlide}>
+        <h2 className={`${styles.sectionTitle} ${styles.wideQuestionTitle}`}>
+          Oh, and some notifications are only for premium users.
+        </h2>
+      </section>
+
+      <section className={styles.centeredContentSlide}>
+        <div className={styles.preferencesLayout}>
+          <h2 className={styles.preferencesTitle}>Don't forget about your users' preferences.</h2>
+          <Image
+            alt="Treasure It notification preferences screen"
+            className={styles.preferencesImage}
+            sizes="30rem"
+            src={preferencesImage}
+          />
+        </div>
+      </section>
+
+      <section className={styles.centeredContentSlide}>
+        <div className={styles.pmAnalyticsLayout}>
+          <h2 className={styles.pmAnalyticsTitle}>
+            Your product manager needs this in analytics and purchases above $20 auto-posted on Slack.
+          </h2>
+          <Image
+            alt="Product manager dog with roadmap notes and notification demands"
+            className={styles.pmAnalyticsImage}
+            sizes="32rem"
+            src={moosePmImage}
+          />
+        </div>
+      </section>
+
+      <section className={styles.centeredContentSlide}>
         <div className={styles.cornerCryLayout}>
           <div>
             <p className={styles.eyebrow}>Scale pressure</p>
@@ -627,7 +720,7 @@ export function PresentationDeck({
         />
       </section>
 
-      <section>
+      <section className={styles.centeredContentSlide}>
         <p className={styles.eyebrow}>Then the mechanism</p>
         <h2 className={styles.eventEmitterTitle}>EventEmitter3</h2>
         <div className={styles.eventEmitterLayout}>
@@ -642,7 +735,7 @@ export function PresentationDeck({
             </ul>
           </div>
           <pre className={styles.eventEmitterCode}>
-            <code>{`import EventEmitter from "eventemitter3";
+            <code className="language-js">{`import EventEmitter from "eventemitter3";
 
 const eventBus = new EventEmitter();
 
@@ -655,6 +748,26 @@ eventBus.emit("item.bid.received", payload);`}</code>
         </div>
       </section>
 
+
+      <section>
+        <p className={styles.eyebrow}>Then the guarantee</p>
+        <h2 className={styles.reduxDocTitle}>Type-Driven Design</h2>
+        <ExternalDocFrame
+          className={styles.storyDocFrame}
+          src="https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/"
+          title="Parse, don't validate"
+        />
+      </section>
+
+      <section>
+        <p className={styles.eyebrow}>And a schema</p>
+        <h2 className={styles.reduxDocTitle}>Parse don't validate</h2>
+        <ExternalDocFrame
+          className={styles.storyDocFrame}
+          src="https://zod.dev/basics?id=parsing-data#parsing-data"
+          title="Zod docs"
+        />
+      </section>
       <section className={styles.fullBleedImageSlide}>
         <Image
           alt="Salt Bae sprinkling TypeScript"
@@ -665,17 +778,7 @@ eventBus.emit("item.bid.received", payload);`}</code>
         />
       </section>
 
-      <section>
-        <p className={styles.eyebrow}>And a schema</p>
-        <h2 className={styles.reduxDocTitle}>Parse don't validate</h2>
-        <ExternalDocFrame
-          className={styles.storyDocFrame}
-          src="https://zod.dev/"
-          title="Zod docs"
-        />
-      </section>
-
-      <section>
+      <section className={styles.centeredContentSlide}>
         <h2 className={styles.fullWidthPunchline}>Just steal their ideas.</h2>
       </section>
 
@@ -689,11 +792,10 @@ eventBus.emit("item.bid.received", payload);`}</code>
         />
       </section>
 
-      <section>
-        <div className={`mermaid ${styles.mermaidDiagram} ${styles.solutionMermaidDiagram}`}>
-          <pre>{`graph TB
-    User[User action] --> API[tRPC router] --> Service[Domain service]
-    Service --> EventBus[Event bus]
+      <section className={styles.centeredContentSlide}>
+        <MermaidBlock
+          chart={`graph TB
+    Service[Domain service] --> EventBus[Event bus]
     EventBus --> Handler[Notification handler]
 
     Handler --> Unified[Unified notification service]
@@ -708,8 +810,6 @@ eventBus.emit("item.bid.received", payload);`}</code>
     Handler --> ChatMirror[Chat mirror path]
     ChatMirror --> Timeline[ChatTimelineService.addSystemMessage]
 
-    Trigger[Trigger reminder tasks] --> Unified
-
     Push --> Expo[Expo push API]
     Email --> Provider[Email provider]
 
@@ -719,12 +819,13 @@ eventBus.emit("item.bid.received", payload);`}</code>
     classDef storageLayer fill:#f1f8e9,color:#111827,stroke:#bef264
     classDef extLayer fill:#fce4ec,color:#111827,stroke:#f9a8d4
 
-    class User,API,Service userLayer
-    class EventBus,Handler,Trigger eventLayer
+    class Service userLayer
+    class EventBus,Handler eventLayer
     class Unified,Prefs,Push,Email,ChatMirror,Timeline notifyLayer
     class Ledger,Inbox,InboxApi storageLayer
-    class Expo,Provider extLayer`}</pre>
-        </div>
+    class Expo,Provider extLayer`}
+          className={styles.solutionMermaidDiagram}
+        />
       </section>
 
       <section>
@@ -808,18 +909,18 @@ eventBus.emit("item.bid.received", payload);`}</code>
         </p>
       </section>
 
-      <section>
+      <section className={styles.centeredContentSlide}>
         <p className={styles.eyebrow}>System shape</p>
         <h2 className={styles.sectionTitle}>One event, many surfaces</h2>
-        <div className={`mermaid ${styles.mermaidDiagram}`}>
-          <pre>{`flowchart LR
+        <MermaidBlock
+          chart={`flowchart LR
   action[Product action] --> event[Provider-free event]
   event --> bus[Zod-validated bus]
   bus --> push[Push]
   bus --> email[Email]
   bus --> inbox[Inbox]
-  bus --> tap[Mobile tap path]`}</pre>
-        </div>
+  bus --> tap[Mobile tap path]`}
+        />
         <pre className={styles.codeBlock}>
           <code>{`eventBus.emit(DOMAIN_EVENTS.[HERO_EVENT], payload);`}</code>
         </pre>
