@@ -20,7 +20,7 @@ type RevealEvent = {
 
 const stepMessages = [
   "Direct side effects feel fine until each new surface adds another required call site.",
-  "One more consumer means touching the same business flow again, plus more chances to forget the tap path.",
+  "One more service means touching the same business flow again, more chances to break something.",
   "Emit one rich event instead and let handlers own push, email, inbox, chat, and navigation side effects.",
 ];
 
@@ -187,7 +187,6 @@ export function CodeMorphSlide({
       data-auto-animate-easing="cubic-bezier(0.22, 1, 0.36, 1)"
       data-auto-animate-id="event-bus-code-journey"
     >
-      <p className={styles.eyebrow}>Magic Move</p>
       <h2
         className={`${styles.sectionTitle} ${
           layout === "analysis" ? styles.magicMoveAnalysisTitle : ""
@@ -225,8 +224,7 @@ export function CodeMorphSlide({
         />
       ))}
       <aside className="notes">
-        Let the code morph as you explain the difference between side effects in
-        the mutation and side effects attached to a rich domain event.
+      So now that we have this typed event bus working, we have our domain-driven events. Now we start to think about how it's all going to start to come together. Dependency injection makes this really simple. We can plug in Expo push notifications, or resend emails, our user preferences, notification ledger for in-app notifications, and you know, a configuration object, because you know why not?
       </aside>
     </section>
   );

@@ -6,7 +6,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { animate } from "animejs";
 import Notes from "reveal.js/plugin/notes";
 import { ShikiMagicMovePrecompiled } from "shiki-magic-move/react";
-import type { RevealApi, RevealConfig, RevealPlugin, RevealPluginFactory } from "reveal.js";
+import type {
+  RevealApi,
+  RevealConfig,
+  RevealPlugin,
+  RevealPluginFactory,
+} from "reveal.js";
 import type { KeyedTokensInfo } from "shiki-magic-move/core";
 
 import {
@@ -16,6 +21,7 @@ import {
 import { CodeMorphSlide } from "./code-morph-slide";
 import cryingImage from "./crying.png";
 import domainDrivenDesignImage from "./ddd.jpeg";
+import errorEventPayloadImage from "./error_event_payload.png";
 import headshotImage from "./headshot.jpeg";
 import mirroredChatImage from "./mirrored_chat.jpeg";
 import moosePmImage from "./moose_pm.png";
@@ -24,6 +30,7 @@ import knockLogoImage from "./knocklogo.png";
 import oneSignalLogoImage from "./onesignal.png";
 import preferencesImage from "./preferences.png";
 import saltBaeTypescriptImage from "./saltbaets.jpeg";
+import standardActionImage from "./standard_action.png";
 import treasureBagImage from "./Longarms.png";
 import vennDiagramImage from "./vendiagram.png";
 import styles from "../styles/deck.module.css";
@@ -45,24 +52,33 @@ type RevealDeck = {
 
 type MermaidRevealConfig = RevealConfig &
   AnythingRevealConfig & {
-  mermaid?: {
-    securityLevel?: "strict" | "loose" | "antiscript" | "sandbox";
-    startOnLoad?: boolean;
-    theme?: "base" | "dark" | "default" | "forest" | "neutral" | "null";
-    themeVariables?: Record<string, string | boolean | number>;
+    mermaid?: {
+      securityLevel?: "strict" | "loose" | "antiscript" | "sandbox";
+      startOnLoad?: boolean;
+      theme?: "base" | "dark" | "default" | "forest" | "neutral" | "null";
+      themeVariables?: Record<string, string | boolean | number>;
+    };
+    mermaidPlugin?: {
+      afterRender?: (element: Element) => void;
+      beforeRender?: (element: Element) => boolean | void;
+      iconPacks?: unknown[];
+    };
   };
-  mermaidPlugin?: {
-    afterRender?: (element: Element) => void;
-    beforeRender?: (element: Element) => boolean | void;
-    iconPacks?: unknown[];
-  };
-};
 
 type DeckPlugin = RevealPlugin | RevealPluginFactory;
 
-function MermaidBlock({ chart, className = "" }: { chart: string; className?: string }) {
+function MermaidBlock({
+  chart,
+  className = "",
+}: {
+  chart: string;
+  className?: string;
+}) {
   return (
-    <div className={`mermaid ${styles.mermaidDiagram} ${className}`} data-mermaid-source={chart}>
+    <div
+      className={`mermaid ${styles.mermaidDiagram} ${className}`}
+      data-mermaid-source={chart}
+    >
       <pre>{chart}</pre>
     </div>
   );
@@ -209,7 +225,9 @@ function NotificationTypeCloudSection({ types }: { types: string[] }) {
       filter: ["blur(8px)", "blur(0px)"],
     });
 
-    const hfAnimeHost = window as Window & { __hfAnime?: ReturnType<typeof animate>[] };
+    const hfAnimeHost = window as Window & {
+      __hfAnime?: ReturnType<typeof animate>[];
+    };
     hfAnimeHost.__hfAnime = hfAnimeHost.__hfAnime || [];
     hfAnimeHost.__hfAnime.push(animationRef.current);
 
@@ -265,13 +283,34 @@ function NotificationTypeCloudSection({ types }: { types: string[] }) {
       </div>
       <div ref={cloudRef} className={styles.notificationTypeCloud}>
         {uniqueTypes.map((type, index) => (
-          <span key={`${type}-${index}`} className={styles.notificationTypeBubble}>
+          <span
+            key={`${type}-${index}`}
+            className={styles.notificationTypeBubble}
+          >
             {type}
           </span>
         ))}
       </div>
       <aside className="notes">
-      And as the application grew, we got more notification types. In staying true to our mission, we want to make sure that our users get the notifications that they actually want, because if they end up turning notifications off, the app loses a lot of value. So we want to be really granular. We want to give our users as much control as possible so that they get the information that they need to successfully transact in person and in their communities. And each one of these types represents a different action that the system takes in that journey from initial bid to I'm here at the pick up location, and most importantly, everything that can happen in between.
+        <ul>
+          <li>And as the application grew, we got more notification types.</li>
+          <li>84 * 8 = 672.</li>
+          <li>
+            This isn't even accounting for individual user preferences. And with
+            every new additional Side effect we want to trigger, we would have
+            to update At least 84 different call sites.
+          </li>
+          <li>
+            We want to make sure that our users get the notifications that they
+            actually want, because if they end up turning notifications off, the
+            app loses a lot of value.
+          </li>
+          <li>So we want to be really granular.</li>
+          <li>
+            We want to give our users as much control as possible so that they
+            get the information that they need.
+          </li>
+        </ul>
       </aside>
     </section>
   );
@@ -284,7 +323,8 @@ function initializeExternalDocFrame(element: HTMLElement) {
     return;
   }
 
-  const rawConfig = element.innerHTML.trim().match(/<!--([\s\S]*?)-->/)?.[1] ?? "{}";
+  const rawConfig =
+    element.innerHTML.trim().match(/<!--([\s\S]*?)-->/)?.[1] ?? "{}";
   let options: Record<string, unknown> = {};
 
   try {
@@ -294,10 +334,13 @@ function initializeExternalDocFrame(element: HTMLElement) {
   }
 
   const src =
-    typeof options.src === "string" ? options.src : "https://revealjs.com/react/";
+    typeof options.src === "string"
+      ? options.src
+      : "https://revealjs.com/react/";
   const title =
     typeof options.title === "string" ? options.title : "External reference";
-  const allow = typeof options.allow === "string" ? options.allow : "fullscreen";
+  const allow =
+    typeof options.allow === "string" ? options.allow : "fullscreen";
 
   const header = document.createElement("div");
   header.className = styles.externalDocHeader;
@@ -383,7 +426,10 @@ function ProgressiveCodeFrame({
 
     const section = sectionRef.current;
 
-    const syncStep = (event: RevealEvent, direction: "forward" | "backward") => {
+    const syncStep = (
+      event: RevealEvent,
+      direction: "forward" | "backward",
+    ) => {
       const fragment = event.fragment;
 
       if (!fragment || fragment.closest("section") !== section) {
@@ -466,13 +512,38 @@ function ProgressiveCodeFrame({
           need a notification. Alright,
         </p>
         <ul>
-          <li>Not so bad. But not everyone has push notifications enabled, so we got to add an email.</li>
-          <li>But not everyone has their email enabled, so we should probably add this to an app inbox as well.</li>
-          <li>But when you&apos;re really active, the In-App inbox gets kind of noisy, so we should also probably mirror these important pick-up notifications in your chat with the person that you&apos;re going to pick up from.</li>
-          <li>And then you probably need to measure this too with your analytics tool.</li>
-          <li>Oh, and product, they want to get notified when someone purchases something or gets a bid accepted over $20.</li>
-          <li>And while we&apos;re at it, let&apos;s also just have webhooks in here as well, because who knows if we&apos;re going to have to notify anyone else about this event.</li>
-          <li>Oh, and you know, Product was thinking about having a live event get triggered here. I don&apos;t know why, but let&apos;s just do that too.</li>
+          <li>
+            Not so bad. But not everyone has push notifications enabled, so we
+            got to add an email.
+          </li>
+          <li>
+            But not everyone has their email enabled, so we should probably add
+            this to an app inbox as well.
+          </li>
+          <li>
+            But when you&apos;re really active, the In-App inbox gets kind of
+            noisy, so we should also probably mirror these important pick-up
+            notifications in your chat with the person that you&apos;re going to
+            pick up from.
+          </li>
+          <li>
+            And then you probably need to measure this too with your analytics
+            tool.
+          </li>
+          <li>
+            Oh, and product, they want to get notified when someone purchases
+            something or gets a bid accepted over $20.
+          </li>
+          <li>
+            And while we&apos;re at it, let&apos;s also just have webhooks in
+            here as well, because who knows if we&apos;re going to have to
+            notify anyone else about this event.
+          </li>
+          <li>
+            Oh, and you know, Product was thinking about having a live event get
+            triggered here. I don&apos;t know why, but let&apos;s just do that
+            too.
+          </li>
         </ul>
       </aside>
     </section>
@@ -493,7 +564,9 @@ function StaticHighlightedCodeBlock({
   }, []);
 
   return (
-    <div className={`${styles.magicMoveFrame} ${styles.staticHighlightedCodeBlock} ${className}`}>
+    <div
+      className={`${styles.magicMoveFrame} ${styles.staticHighlightedCodeBlock} ${className}`}
+    >
       {isMounted ? (
         <ShikiMagicMovePrecompiled
           steps={steps}
@@ -510,9 +583,17 @@ function StaticHighlightedCodeBlock({
 }
 
 const eventBusTeachingMessages = [
-  "A domain event name starts in the schema registry.",
+  "A domain event constant gives the product event a stable string name.",
+  "That domain event name becomes the key in the schema registry.",
   "That registry becomes the source of truth for the TypeScript payload map.",
   "The event name selects the payload type at compile time, then the same schema validates it at runtime.",
+];
+
+const preferenceGateMessages = [
+  "The handler stays small: it forwards the typed event payload to the notification template path.",
+  "The helper resolves the notification type, renders the template, and hands channels to the unified service.",
+  "Each channel asks the injected preference service before touching Expo or email.",
+  "The preference service collapses global, notification-type, and group settings into email/push booleans.",
 ];
 
 function EventBusTeachingMorphSlide({
@@ -525,7 +606,8 @@ function EventBusTeachingMorphSlide({
   const [isMounted, setIsMounted] = useState(false);
   const [step, setStep] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
-  const currentMessage = eventBusTeachingMessages[step] ?? eventBusTeachingMessages[0];
+  const currentMessage =
+    eventBusTeachingMessages[step] ?? eventBusTeachingMessages[0];
 
   useEffect(() => {
     setIsMounted(true);
@@ -538,7 +620,10 @@ function EventBusTeachingMorphSlide({
 
     const section = sectionRef.current;
 
-    const syncStep = (event: RevealEvent, direction: "forward" | "backward") => {
+    const syncStep = (
+      event: RevealEvent,
+      direction: "forward" | "backward",
+    ) => {
       const fragment = event.fragment;
 
       if (!fragment || fragment.closest("section") !== section) {
@@ -620,10 +705,43 @@ function EventBusTeachingMorphSlide({
         />
       ))}
       <aside className="notes">
-        Press forward through the morph: first show the domain event registry,
-        then the inferred DomainEvents map, then land on the typed emit method.
-        The point is that the event name owns both the compile-time payload and
-        runtime validation.
+        Let's go back to thinking about Redux and disjoint unions of types.
+        <ul>
+          <li>(morph1) We start out defining our event name.</li>
+          <li>(morph2) We create our flux standard action event.</li>
+          <li>
+            So what's really nice here is that with just a few short lines of
+            TypeScript, we now have a mapped type.
+          </li>
+          <li>
+            That can infer the key and specific payload of a notification
+            emission that we would emit.
+          </li>
+          <li>So we have strongly-typed parameters.</li>
+          <li>
+            We know what notification we're sending to Expo Notification Service
+            or Resend or anywhere, and we can pass around these types and use
+            them throughout our application.
+          </li>
+          <li>And they fit really nicely into our event emitter.</li>
+          <li>Because that's really where we want this strong type safety.</li>
+          <li>
+            We want to be parsing our function arguments, and we want to really
+            be explicit about what we're doing so that it's easy to follow, and
+            it's easy to figure out what's going on when something breaks,
+            either in Sentry or when we're building and we get a bunch of type
+            errors.
+          </li>
+          <li>
+            Our good friend, the parse function, as I alluded to earlier,
+            playing a huge role here.
+          </li>
+          <li>
+            And then the final piece of the puzzle here, the contract of the
+            payload that we're sending, is just another thought schema at the end
+            of the day.
+          </li>
+        </ul>
       </aside>
     </section>
   );
@@ -713,21 +831,143 @@ function PayloadSchemaMorphSlide({ steps }: { steps: KeyedTokensInfo[] }) {
   );
 }
 
+function PreferenceGateMorphSlide({
+  deck,
+  steps,
+}: {
+  deck: RevealDeck | null;
+  steps: KeyedTokensInfo[];
+}) {
+  const [isMounted, setIsMounted] = useState(false);
+  const [step, setStep] = useState(0);
+  const sectionRef = useRef<HTMLElement>(null);
+  const currentMessage =
+    preferenceGateMessages[step] ?? preferenceGateMessages[0];
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!deck || !sectionRef.current) {
+      return;
+    }
+
+    const section = sectionRef.current;
+
+    const syncStep = (
+      event: RevealEvent,
+      direction: "forward" | "backward",
+    ) => {
+      const fragment = event.fragment;
+
+      if (!fragment || fragment.closest("section") !== section) {
+        return;
+      }
+
+      const nextStep = Number(fragment.getAttribute("data-code-step"));
+
+      if (!Number.isFinite(nextStep)) {
+        return;
+      }
+
+      setStep(direction === "forward" ? nextStep : Math.max(0, nextStep - 1));
+    };
+
+    const handleFragmentShown = (event: RevealEvent) => {
+      syncStep(event, "forward");
+    };
+
+    const handleFragmentHidden = (event: RevealEvent) => {
+      syncStep(event, "backward");
+    };
+
+    const handleSlideChanged = (event: RevealEvent) => {
+      if (event.currentSlide === section) {
+        setStep(0);
+      }
+    };
+
+    deck.on("fragmentshown", handleFragmentShown);
+    deck.on("fragmenthidden", handleFragmentHidden);
+    deck.on("slidechanged", handleSlideChanged);
+
+    return () => {
+      deck.off("fragmentshown", handleFragmentShown);
+      deck.off("fragmenthidden", handleFragmentHidden);
+      deck.off("slidechanged", handleSlideChanged);
+    };
+  }, [deck]);
+
+  return (
+    <section
+      ref={sectionRef}
+      className={styles.centeredContentSlide}
+      data-auto-animate
+      data-auto-animate-duration="0.7"
+      data-auto-animate-easing="cubic-bezier(0.22, 1, 0.36, 1)"
+      data-auto-animate-id="preference-gate-code"
+    >
+      <div className={styles.preferenceGateLayout}>
+        <div className={styles.preferenceGateCopy}>
+          <p className={styles.preferenceGateCaption}>{currentMessage}</p>
+        </div>
+        <div
+          data-id="preference-gate-code-frame"
+          className={`${styles.magicMoveFrame} ${styles.preferenceGateCode}`}
+        >
+          {isMounted ? (
+            <ShikiMagicMovePrecompiled
+              steps={steps}
+              step={step}
+              animate
+              options={{
+                duration: 650,
+                lineNumbers: true,
+                stagger: 0.14,
+              }}
+            />
+          ) : (
+            <div className={styles.magicMovePlaceholder} />
+          )}
+        </div>
+      </div>
+      {steps.slice(1).map((_, index) => (
+        <span
+          key={index + 1}
+          aria-hidden="true"
+          className={`fragment custom ${styles.codeStepFragment}`}
+          data-code-step={index + 1}
+        />
+      ))}
+      <aside className="notes">
+        So this is the full loop in a tiny version. The service fires the event
+        after the action is taken. The event handler passes the payload into the
+        notification template. The template builds the push and email payloads,
+        then the unified notification service takes over. That is where user
+        preferences become a delivery policy: before Expo or email gets called,
+        we check whether this user wants this notification type, in this
+        channel, and optionally for this group.
+      </aside>
+    </section>
+  );
+}
+
 export function PresentationDeck({
   codeMorphSteps,
   directSideEffectSteps,
   eventBusTeachingStep,
-  eventRegistryStep,
   eventEmitStep,
   notificationServiceSteps,
+  preferenceGateSteps,
   snapshot,
 }: {
   codeMorphSteps: KeyedTokensInfo[];
   directSideEffectSteps: KeyedTokensInfo[];
   eventBusTeachingStep: KeyedTokensInfo[];
-  eventRegistryStep: KeyedTokensInfo[];
   eventEmitStep: KeyedTokensInfo[];
   notificationServiceSteps: KeyedTokensInfo[];
+  preferenceGateSteps: KeyedTokensInfo[];
   snapshot: TalkSnapshot;
 }) {
   const deckRef = useRef<HTMLDivElement>(null);
@@ -738,16 +978,21 @@ export function PresentationDeck({
     let isCancelled = false;
 
     const loadPlugins = async () => {
-      const { default: RevealHighlight } = await import("reveal.js/plugin/highlight");
-      const { default: RevealMermaid } = await import(
-        "reveal.js-mermaid-plugin/plugin/mermaid/mermaid.esm.js"
-      );
+      const { default: RevealHighlight } =
+        await import("reveal.js/plugin/highlight");
+      const { default: RevealMermaid } =
+        await import("reveal.js-mermaid-plugin/plugin/mermaid/mermaid.esm.js");
 
       if (isCancelled) {
         return;
       }
 
-      setPlugins([Notes, RevealHighlight, RevealMermaid, createRevealAnythingPlugin()]);
+      setPlugins([
+        Notes,
+        RevealHighlight,
+        RevealMermaid,
+        createRevealAnythingPlugin(),
+      ]);
     };
 
     void loadPlugins();
@@ -759,7 +1004,9 @@ export function PresentationDeck({
 
   useEffect(() => {
     const initializeExternalDocs = () => {
-      for (const element of Array.from(document.getElementsByClassName("external-doc"))) {
+      for (const element of Array.from(
+        document.getElementsByClassName("external-doc"),
+      )) {
         if (element instanceof HTMLElement) {
           initializeExternalDocFrame(element);
         }
@@ -842,7 +1089,9 @@ export function PresentationDeck({
         <p className={styles.eyebrow}>App.js Conf 2026</p>
         <h1 className={styles.heroTitle}>Emit Once, Notify Everywhere</h1>
         <aside className="notes">
-        I just wanted to thank a software mansion for having me come. I'm so grateful for the opportunity to speak at App.js Conf 2026. It's an honor to be here.
+          I just wanted to thank a software mansion for having me come. I'm so
+          grateful for the opportunity to speak at App.js Conf 2026. It's an
+          honor to be here.
         </aside>
       </section>
 
@@ -852,7 +1101,8 @@ export function PresentationDeck({
             <p className={styles.eyebrow}>Intro</p>
             <h2 className={styles.bigIdea}>Hi, I&apos;m Ben.</h2>
             <p className={styles.statement}>
-              I&apos;m the founder of Treasure It, a marketplace for P2P hyperlocal commerce
+              I&apos;m the founder of Treasure It, a marketplace for P2P
+              hyperlocal commerce
             </p>
           </div>
           <div className={styles.introImages}>
@@ -871,7 +1121,22 @@ export function PresentationDeck({
           </div>
         </div>
         <aside className="notes">
-        I created Treasure It, which is a platform for local commerce. So if you've ever bought anything off of Facebook Marketplace or Craigslist, And wanted to throw your computer at a wall because of how difficult it is. I want to solve that.
+          <ul>
+            <li>
+              I created Treasure It, which is a platform for local commerce.
+            </li>
+            <li>
+              So if you've ever bought anything off of Facebook Marketplace or
+              Craigslist, and wanted to throw your computer at a wall because of
+              how difficult it is.
+            </li>
+            <li>
+              Coordination and scheduling have always been the Achilles' heel.
+              Getting the thing down the street is harder than getting it from a
+              warehouse across the country.
+            </li>
+            <li>I want to solve that.</li>
+          </ul>
         </aside>
       </section>
 
@@ -879,9 +1144,7 @@ export function PresentationDeck({
         <div className={styles.marketplaceNotificationLayout}>
           <div>
             <p className={styles.eyebrow}>Marketplace reality</p>
-            <h2 className={styles.bigIdea}>
-              Notifications take center stage
-            </h2>
+            <h2 className={styles.bigIdea}>Notifications take center stage</h2>
           </div>
           <Image
             alt="Marketplace notifications connecting store, calendar, and package activity"
@@ -892,15 +1155,31 @@ export function PresentationDeck({
           />
         </div>
         <aside className="notes">
-        So, how do we fix the problem?
-
-
-        We solved it with built-in scheduling platform and inventory management system.
-
-        Because our users are interacting peer-to-peer, The act of "shipping" is a key part of the product. Making sure that the user gets the right notification at the right time for the right item to make sure that they end up at the right place It is what makes the product useful.
-
-        And that's why notifications have taken such a front-row seat in my journey. If a buyer and seller can't meet at the right time and find the right price, the product is useless. My job is to make it painfully hard to miss a pickup. Expo Push Notification Service has been integral in achieving our mission.
-
+          <ul>
+            <li>
+              We solved it with built-in scheduling platform and inventory
+              management system.
+            </li>
+            <li>
+              The act of "shipping" is a lot more involved than just sending it
+              to the post office.
+            </li>
+            <li>
+              The user needs to get the right notification at the right time, to
+              make sure they're at the right place at the right time with the
+              right thing.
+            </li>
+            <li>
+              That level of IRL coordination makes notifications a first-class
+              product on their own.
+            </li>
+            <li>If we can't provide effective coordination, we're useless.</li>
+            <li>My job is to make it painfully hard to miss a pickup.</li>
+            <li>
+              Expo Push Notification Service has been integral in achieving our
+              mission.
+            </li>
+          </ul>
         </aside>
       </section>
 
@@ -912,7 +1191,21 @@ export function PresentationDeck({
           title="Expo Notifications docs"
         />
         <aside className="notes">
-        I think most of us here have been on This page of the expo docs. When I was reading the request for proposals, the only requirement was using an Expo service, and I said, I bet I could sneak a backend talk into a React Native conference. But, in all seriousness, The documentation, product, And developer experience of Expo Push Notifications has been incredible, And I'm so happy that it exists.
+          <ul>
+            <li>
+              I think most of us here have been on This page of the expo docs.
+            </li>
+            <li>
+              When I was reading the request for proposals, the only requirement
+              was using an Expo service, and I said, I bet I could sneak a
+              backend talk into a React Native conference.
+            </li>
+            <li>
+              But, in all seriousness, The documentation, product, And developer
+              experience of Expo Push Notifications has been incredible, And I'm
+              so happy that it exists.
+            </li>
+          </ul>
         </aside>
       </section>
 
@@ -934,10 +1227,14 @@ export function PresentationDeck({
 
       <section className={styles.centerQuestionSlide}>
         <h2 className={`${styles.sectionTitle} ${styles.wideQuestionTitle}`}>
-          What happens when you need to derive multiple notifications from a single event?
+          What happens when you need to derive multiple notifications from a
+          single event?
         </h2>
         <aside className="notes">
-        Sometimes, We end up with notifications that have been derived from another event. So we need this system to be composable so that If we need to drive notifications from existing ones, we can do that without repeating ourselves.
+          We end up with notifications that have been derived from another
+          event. This system needs to be composable so that If we need to derive
+          notifications from existing ones, we can do that without repeating
+          ourselves.
         </aside>
       </section>
 
@@ -950,7 +1247,24 @@ export function PresentationDeck({
           className={styles.derivedNotificationDiagram}
         />
         <aside className="notes">
-        The most straightforward example of this kind of derived event is going to be when you switch a recipient. So let's say you're trying to get something out the door and someone hasn't replied to you. They are MIA, AWOL; you don't hear from them, and there's someone else who wants to take it. You need to tell the person that's unresponsive that they are no longer chosen, and you want to let the new recipient know That they've been chosen and they need to schedule a pickup time. You'd be surprised how often this kind of thing happens.
+          An example of this kind of derived event is going to be when you
+          switch a recipient.
+          <ul>
+            <li>
+              Let's say you're trying to get something out the door and someone
+              hasn't replied to you.
+            </li>
+            <li>
+              They are MIA, AWOL; you don't hear from them, and there's someone
+              else who wants to take it.
+            </li>
+            <li>
+              You need to tell the person that's unresponsive that they are no
+              longer chosen, and you want to let the new recipient know That
+              they've been chosen and they need to schedule a pickup time.
+            </li>
+            <li>You'd be surprised how often this kind of thing happens.</li>
+          </ul>
         </aside>
       </section>
 
@@ -959,13 +1273,17 @@ export function PresentationDeck({
           What happens when you need to support in-app notifications?
         </h2>
         <aside className="notes">
-        But sometimes people's phones have a lot of notifications, and it's easy for them to just check the in-app notifications tab. Because we really don't want our users to miss important notifications
+          But sometimes people's phones have a lot of notifications, and it's
+          easy for them to just check the in-app notifications tab. Because we
+          really don't want our users to miss important notifications
         </aside>
       </section>
 
       <section className={styles.centeredContentSlide}>
         <div className={styles.chatNotificationLayout}>
-          <h2 className={styles.chatNotificationTitle}>Or in chat notifications</h2>
+          <h2 className={styles.chatNotificationTitle}>
+            Or in chat notifications
+          </h2>
           <Image
             alt="Treasure It in-chat notification timeline"
             className={styles.chatNotificationImage}
@@ -974,7 +1292,26 @@ export function PresentationDeck({
           />
         </div>
         <aside className="notes">
-        Then, as one does, you become a power user of your own app, and you realize that your in-app notifications are just a mess. There's so much going on between 10 different people coordinating like six different pickups that you're still missing the signal from the noise. So I decided to mirror these notifications as a system message in line with the user that you're chatting with to make the exchange with. That way, it becomes even harder to forget what happened or when you're supposed to be somewhere.
+          <ul>
+            <li>
+              Then, as one does, you become a power user of your own app, and
+              you realize that your in-app notifications are just a mess.
+            </li>
+            <li>
+              There's so much going on between 10 different people coordinating
+              like six different pickups that you're still missing the signal
+              from the noise.
+            </li>
+            <li>
+              To solve this, mirror these notifications as a system message in
+              line with the user that you're chatting with to make the exchange
+              with.
+            </li>
+            <li>
+              It becomes even harder to forget what happened or when you're
+              supposed to be somewhere.
+            </li>
+          </ul>
         </aside>
       </section>
 
@@ -983,13 +1320,16 @@ export function PresentationDeck({
           Oh, and some notifications are only for premium users.
         </h2>
         <aside className="notes">
-        And we have additional notifications that are only for premium users because, Business and numbers.
+          And we have additional notifications that are only for premium users
+          because, Business and numbers.
         </aside>
       </section>
 
       <section className={styles.centeredContentSlide}>
         <div className={styles.preferencesLayout}>
-          <h2 className={styles.preferencesTitle}>Don't forget about your users' preferences.</h2>
+          <h2 className={styles.preferencesTitle}>
+            Don't forget about your users' preferences.
+          </h2>
           <Image
             alt="Treasure It notification preferences screen"
             className={styles.preferencesImage}
@@ -998,14 +1338,26 @@ export function PresentationDeck({
           />
         </div>
         <aside className="notes">
-        Users kept telling me over and over again that the platforms today will send you messages that are just noise and spam. And we need to make sure that our users can configure notifications to their heart's desire, that they are in full control, and they'll get the messages that they need. Nothing more, nothing less.
+          <ul>
+            <li>
+              Users kept telling me over and over again that the platforms today
+              will send you messages that are just noise and spam.
+            </li>
+            <li>
+              And we need to make sure that our users can configure
+              notifications to their heart's desire, that they are in full
+              control, and they'll get the messages that they need.
+            </li>
+            <li>Nothing more, nothing less.</li>
+          </ul>
         </aside>
       </section>
 
       <section className={styles.centeredContentSlide}>
         <div className={styles.pmAnalyticsLayout}>
           <h2 className={styles.pmAnalyticsTitle}>
-            Your product manager needs this in analytics and purchases above $20 auto-posted on Slack.
+            Your product manager needs this in analytics and purchases above $20
+            auto-posted on Slack.
           </h2>
           <Image
             alt="Product manager dog with roadmap notes and notification demands"
@@ -1015,7 +1367,65 @@ export function PresentationDeck({
           />
         </div>
         <aside className="notes">
-        So I do have a coworker who's a pretty no-nonsense product manager. He thinks that all of this should have been done yesterday and you know, just get AI to do it. That's it, it will be fine. He's also convinced that I didn't feed him dinner five minutes ago and that he's starving. But also, you're going to want to know what's happening in the app. Maybe you want to see when a specific kind of purchase is made or when someone keeps dropping out or a pickup was completed. If we're dealing with one side effect and one external system, we should be able to effectively communicate with any external system using the same framework that we're building for our notifications. So, how do we solve this problem? Calmly and thoughtfully,
+          <ul>
+            <li>
+              If we're dealing with one side effect and one external system, we
+              should be able to effectively communicate with any external
+              system.
+            </li>
+            <li>
+              And then what happens the next time You Are given another
+              requirement for another side effect.
+            </li>
+            <li>
+              There has to be a better way than updating 84 different call
+              sites.
+            </li>
+            <li>So, how do we solve this problem?</li>
+            <li>Calmly and thoughtfully,</li>
+          </ul>
+        </aside>
+      </section>
+
+      <section className={styles.centeredContentSlide}>
+        <div className={styles.eventOrbitDiagramLayout}>
+          <h2 className={styles.eventOrbitDiagramTitle}>
+            Put the event in the center
+          </h2>
+          <MermaidBlock
+            chart={`flowchart LR
+    Push[Push] --- Event((Domain event))
+    Email[Email] --- Event
+    Chat[Chat] --- Event
+    Event --- Inbox[In-app]
+    Event --- Analytics[Analytics]
+    Event --- Slack[Slack]
+
+    classDef event fill:#fff3e0,color:#111827,stroke:#f2a65a,stroke-width:3px
+    classDef channel fill:#e8f5e8,color:#111827,stroke:#86efac
+    classDef external fill:#fce4ec,color:#111827,stroke:#f9a8d4
+
+    class Event event
+    class Push,Email,Inbox,Chat channel
+    class Analytics,Slack external`}
+            className={styles.eventOrbitMermaidDiagram}
+          />
+        </div>
+        <aside className="notes">
+          <ul>
+            <li>
+              The product code emits the event once, and everything else
+              subscribes from the outside.
+            </li>
+            <li>
+              Push, email, analytics, and Slack are no longer hard-coded into
+              the product call site.
+            </li>
+            <li>
+              Adding a new side effect becomes adding a new subscriber, not
+              updating 84 different places.
+            </li>
+          </ul>
         </aside>
       </section>
 
@@ -1033,7 +1443,8 @@ export function PresentationDeck({
           />
         </div>
         <aside className="notes">
-        Go to the corner and start crying. And in that moment of panic and desperation, the first thing you start to think of is of course.....
+          Go to the corner and start crying. And in that moment of panic and
+          desperation, the first thing you start to think of is of course.....
         </aside>
       </section>
 
@@ -1045,20 +1456,35 @@ export function PresentationDeck({
           title="Redux core docs"
         />
         <aside className="notes">
-        Redux! That's it, that's the solution. That's how we're solving all of our problems. One thing that I really loved about Redux was how explicit the action creators were.
+          Redux! That's it, that's the solution. That's how we're solving all of
+          our problems. One thing that I really loved about Redux was how
+          explicit the action creators were.
         </aside>
       </section>
 
       <section>
         <p className={styles.eyebrow}>Then I started thinking</p>
-        <h2 className={styles.reduxDocTitle}>What about actions and action creators?</h2>
+        <h2 className={styles.reduxDocTitle}>
+          What about actions and action creators?
+        </h2>
         <ExternalDocFrame
           className={styles.reduxDocFrame}
           src="https://redux.js.org/usage/reducing-boilerplate#generating-action-creators"
           title="Redux action creators docs"
         />
         <aside className="notes">
-        Just those beefy all-caps constants telling you exactly what's happening every single time? Made it easy to grab my codebase, made it easy to understand what piece of state was being updated, and yeah, incredibly straightforward and easy to reason about. But more specifically, action creators
+          <ul>
+            <li>
+              Just those beefy all-caps constants telling you exactly what's
+              happening every single time?
+            </li>
+            <li>
+              Made it easy to grab my codebase, made it easy to understand what
+              piece of state was being updated, and yeah, incredibly
+              straightforward and easy to reason about.
+            </li>
+            <li>But more specifically, action creators</li>
+          </ul>
         </aside>
       </section>
 
@@ -1090,7 +1516,9 @@ export function PresentationDeck({
           </div>
         </div>
         <aside className="notes">
-        And more specifically than that, thinking about the flux standard action. These all feel like events that are being broadcast and subscribed to. Which they were
+          And more specifically than that, thinking about the flux standard
+          action. These all feel like events that are being broadcast and
+          subscribed to. Which they were
         </aside>
       </section>
 
@@ -1103,16 +1531,10 @@ export function PresentationDeck({
           src={domainDrivenDesignImage}
         />
         <aside className="notes">
-        Sitting in the corner, I start thinking about this book, Domain-Driven Design. It was published back in 2003.
-
-        Domain-driven design is predicated on the following goals:
-
-        - initiating a creative collaboration between technical and domain experts to iteratively refine a conceptual model that addresses particular domain problems.
-        - basing complex designs on a model of the domain;
-        - placing the project's primary focus on the core domain and domain logic layer;
-
-        And the key idea is that you should be able to model your domain in a way that is easy to understand and easy to reason about.
-
+          Sitting in the corner, I start thinking about this book, Domain-Driven
+          Design. It was published back in 2003. The key idea is that you should
+          be able to model your domain in a way that is easy to understand and
+          easy to reason about.
         </aside>
       </section>
 
@@ -1142,10 +1564,19 @@ eventBus.emit("item.bid.received", payload);`}</code>
           </pre>
         </div>
         <aside className="notes">
-        And then how are these different systems are going to connect outside of their boundaries without coupling them together? We don't have a dispatch and an action creator here in our backend, but we do have events, like nodejs events, but also we ended up using event emitter three
+          <ul>
+            <li>
+              And then how are these different systems are going to connect
+              outside of their boundaries without coupling them together?
+            </li>
+            <li>
+              We don't have a dispatch and an action creator here in our
+              backend, but we do have events, like nodejs events, but also we
+              ended up using event emitter three
+            </li>
+          </ul>
         </aside>
       </section>
-
 
       <section>
         <p className={styles.eyebrow}>Then the guarantee</p>
@@ -1156,7 +1587,21 @@ eventBus.emit("item.bid.received", payload);`}</code>
           title="Parse, don't validate"
         />
         <aside className="notes">
-        Yeah, so now I realize that I should probably just keep sitting in this corner because I'm getting a lot of good ideas here. And I remember reading this blog post about seven years ago. Wow, 2019. But this blog post was heavily referenced in the Zod docs. And I don't personally write Haskell. But incredible read, and yeah, functional programming is cool.
+          <ul>
+            <li>
+              Yeah, so now I realize that I should probably just keep sitting in
+              this corner because I'm getting a lot of good ideas here.
+            </li>
+            <li>
+              And I remember reading this blog post about seven years ago.
+            </li>
+            <li>Wow, 2019.</li>
+            <li>But this blog post was heavily referenced in the Zod docs.</li>
+            <li>And I don't personally write Haskell.</li>
+            <li>
+              But incredible read, and yeah, functional programming is cool.
+            </li>
+          </ul>
         </aside>
       </section>
 
@@ -1169,7 +1614,29 @@ eventBus.emit("item.bid.received", payload);`}</code>
           title="Zod docs"
         />
         <aside className="notes">
-        And the parse method that is literally the first method in the docs. And this parse method becomes integral, really the bedrock of this system. And is able to provide us with a level of type safety that I couldn't get before. Something close to an introspection layer that you would get from a GraphQL schema. Being able to get those red squiggly lines and trust that you actually have a real type error in a large system becomes worth its weight in gold.
+          <ul>
+            <li>
+              And the parse method that is literally the first method in the
+              docs.
+            </li>
+            <li>
+              And this parse method becomes integral, really the bedrock of this
+              system.
+            </li>
+            <li>
+              And is able to provide us with a level of type safety that I
+              couldn't get before.
+            </li>
+            <li>
+              Something close to an introspection layer that you would get from
+              a GraphQL schema.
+            </li>
+            <li>
+              Being able to get those red squiggly lines and trust that you
+              actually have a real type error in a large system becomes worth
+              its weight in gold.
+            </li>
+          </ul>
         </aside>
       </section>
       <section className={styles.fullBleedImageSlide}>
@@ -1181,14 +1648,17 @@ eventBus.emit("item.bid.received", payload);`}</code>
           src={saltBaeTypescriptImage}
         />
         <aside className="notes">
-        And yeah, just think about types like map types and inferring types and all the types, because TypeScript rules. Yeah, I have all these ideas in my head, and my next thought is....
+          And yeah, just think about types like map types and inferring types
+          and all the types, because TypeScript rules. Yeah, I have all these
+          ideas in my head, and my next thought is....
         </aside>
       </section>
 
       <section className={styles.centeredContentSlide}>
         <h2 className={styles.fullWidthPunchline}>Just steal their ideas.</h2>
         <aside className="notes">
-        These ideas are great, and if I'm not going to steal them, someone else will.
+          These ideas are great, and if I'm not going to steal them, someone
+          else will.
         </aside>
       </section>
 
@@ -1201,13 +1671,17 @@ eventBus.emit("item.bid.received", payload);`}</code>
           src={vennDiagramImage}
         />
         <aside className="notes">
-        God, I love a good Venn diagram. Especially when three overlapping parts aren't labeled because, Corporate strategy.
+          Eventually when you steal enough ideas, you get to call it a new idea.
+          God, I love a good Venn diagram. Especially when three overlapping
+          parts aren't labeled because, Corporate strategy.
         </aside>
       </section>
 
       <section className={styles.centeredContentSlide}>
         <div className={styles.provenTechnologyLayout}>
-          <h2 className={styles.provenTechnologyTitle}>Why use a proven Technology?</h2>
+          <h2 className={styles.provenTechnologyTitle}>
+            Why use a proven Technology?
+          </h2>
           <div className={styles.provenTechnologyLogos}>
             <Image
               alt="OneSignal logo"
@@ -1224,13 +1698,16 @@ eventBus.emit("item.bid.received", payload);`}</code>
           </div>
         </div>
         <aside className="notes">
-        And there are a lot of companies that do this and a whole slew of other things extremely well, but, Where's the fun in that?
+          And there are a lot of companies that do this and a whole slew of
+          other things extremely well, but, Where's the fun in that?
         </aside>
       </section>
 
       <section className={styles.centeredContentSlide}>
         <div className={styles.solutionDiagramLayout}>
-          <h2 className={styles.solutionDiagramTitle}>It's really not so bad</h2>
+          <h2 className={styles.solutionDiagramTitle}>
+            It's really not so bad
+          </h2>
           <MermaidBlock
             chart={`graph TB
     Service[Domain service] --> EventBus[Typed Event Bus]
@@ -1243,7 +1720,6 @@ eventBus.emit("item.bid.received", payload);`}</code>
 
     Unified --> Ledger[Notification ledger]
     Ledger --> Inbox[In-app inbox reads]
-    Inbox --> InboxApi[listInbox / unread / read mutations]
 
     Handler --> ChatMirror[Chat mirror path]
     ChatMirror --> Timeline[ChatTimelineService.addSystemMessage]
@@ -1263,19 +1739,39 @@ eventBus.emit("item.bid.received", payload);`}</code>
     class Service userLayer
     class EventBus,Handler eventLayer
     class Unified,Prefs,Push,Email,ChatMirror,Timeline,Analytics,Slack notifyLayer
-    class Ledger,Inbox,InboxApi storageLayer
+    class Ledger,Inbox storageLayer
     class Expo,Provider extLayer`}
             className={styles.solutionMermaidDiagram}
           />
         </div>
         <aside className="notes">
-        So yeah, obviously the next step is to create a mermaid diagram, because of course that's the next step. And it's really not so bad once we start to break down the system a little more and figure out what our requirements are. Our event bus publishes to a notification handler.Or really any subscriber, That way we can decouple our business logic And services from our side effects. And then from there we can Pass our event to any number of our services that handle our side effects, but most importantly, our notifications. Those are the ones that we deeply care about the most.
+          <ul>
+            <li>
+              And it's really not so bad once we start to break down the system
+              a little more and figure out what our requirements are.
+            </li>
+            <li>Our event bus publishes to a notification handler.</li>
+            <li>Or really any subscriber.</li>
+            <li>
+              That way we can decouple our business logic And services from our
+              side effects.
+            </li>
+            <li>
+              And then from there we can Pass our event to any number of our
+              services that handle our side effects, but most importantly, our
+              notifications.
+            </li>
+            <li>Those are the ones that we deeply care about the most.</li>
+          </ul>
         </aside>
       </section>
 
-      <EventBusTeachingMorphSlide deck={deck} steps={eventBusTeachingStep.slice(0, 3)} />
+      <EventBusTeachingMorphSlide
+        deck={deck}
+        steps={eventBusTeachingStep.slice(0, 4)}
+      />
       <PayloadSchemaMorphSlide steps={eventBusTeachingStep} />
-
+      <PreferenceGateMorphSlide deck={deck} steps={preferenceGateSteps} />
       <section className={styles.centeredContentSlide}>
         <div>
           <p className={styles.eyebrow}>Schema registry</p>
@@ -1285,28 +1781,41 @@ eventBus.emit("item.bid.received", payload);`}</code>
             the TypeScript type every subscriber sees.
           </p>
         </div>
+        <aside className="notes">
+          So yeah, similar to Redux, that event name, that constant, that's
+          owning the entire life cycle of the event emission that we're firing
+          off
+        </aside>
+      </section>
+      <section>
+        <h2 className={styles.sectionTitle}>
+          And now all of our work finally pays off.
+        </h2>
+      </section>
+      <section>
+        <Image
+          alt="Standard action code showing commerce activation buyer match credit request"
+          className={styles.standardActionImage}
+          priority
+          sizes="88rem"
+          src={standardActionImage}
+        />
+        <aside className="notes">The type inference.</aside>
       </section>
 
-      <section className={styles.centeredContentSlide}>
-        <div className={styles.eventRegistryLayout}>
-          <h2 className={styles.eventRegistryTitle}>
-            One event name ties the whole contract together
-          </h2>
-          <div className={styles.eventRegistryBody}>
-            <StaticHighlightedCodeBlock
-              className={styles.eventRegistryCode}
-              steps={eventRegistryStep}
-            />
-            <div className={styles.eventRegistryNotes}>
-              <p>notification type</p>
-              <p>payload schema</p>
-              <p>template schema</p>
-              <p>inferred TypeScript payload</p>
-            </div>
-          </div>
-        </div>
+      <section className={styles.centerQuestionSlide}>
+        <h2 className={styles.sectionTitle}>A beautiful red squiggle</h2>
+        <Image
+          alt="TypeScript error on event payload showing an unexpected brandName field"
+          className={styles.errorEventPayloadImage}
+          priority
+          sizes="78rem"
+          src={errorEventPayloadImage}
+        />
+        <aside className="notes">
+          The moment we've been waiting for: the humble red squiggle
+        </aside>
       </section>
-
       <CodeMorphSlide
         deck={deck}
         frameDataId="notification-service-code-frame"
@@ -1317,284 +1826,44 @@ eventBus.emit("item.bid.received", payload);`}</code>
         subtitle="Start with one service. Then make the delivery boundaries explicit."
         title="Dependency injection"
       />
-
-      <section>
-        <p className={styles.eyebrow}>Step 1</p>
-        <h2 className={styles.sectionTitle}>Emit the event</h2>
-        <StaticHighlightedCodeBlock steps={eventEmitStep} />
-      </section>
-
-      <section className={styles.centerQuestionSlide}>
-        <h2 className={styles.sectionTitle}>Standard Action</h2>
-      </section>
-
-      <section className={styles.centerQuestionSlide}>
-        <h2 className={styles.sectionTitle}>A beautiful red squiggle</h2>
-      </section>
-
-      <section>
-        <p className={styles.eyebrow}>The user moment</p>
-        <h2 className={styles.sectionTitle}>A tap has to land somewhere true</h2>
-        <div className={styles.flowRow}>
-          <span>{heroEvent}</span>
-          <span>notification</span>
-          <span>tap</span>
-          <span>{destination}</span>
-        </div>
-        <p className={styles.statement}>
-          A notification is not done when it is delivered. It is done when the
-          tap lands correctly.
-        </p>
-        <aside className="notes">
-          Keep the hero flow placeholder until the specific flow is chosen.
-          Current bias is recipient.selected.
-        </aside>
-      </section>
-
-      <section>
-        <p className={styles.eyebrow}>Hidden work</p>
-        <h2 className={styles.sectionTitle}>One visible notification, many product effects</h2>
-        <div className={styles.cardGrid}>
-          <article className={styles.card}>
-            <h3>Delivery</h3>
-            <p>Push, email, preference checks, eligibility rules, provider results.</p>
-          </article>
-          <article className={styles.card}>
-            <h3>Product state</h3>
-            <p>Inbox ledger, chat mirror, delivery lifecycle, unread state.</p>
-          </article>
-          <article className={styles.card}>
-            <h3>Mobile routing</h3>
-            <p>Deep-link payload, response listener, fallback route, Expo Router destination.</p>
-          </article>
-        </div>
-      </section>
-
-      <section data-auto-animate>
-        <p className={styles.eyebrow}>Reframe</p>
-        <h2 className={styles.bigIdea}>The notification is not the thing.</h2>
-        <h2 className={styles.bigIdeaAccent}>The event is the thing.</h2>
-        <aside className="notes">
-          This is the mental model shift. Bring back the refrain here.
-        </aside>
-      </section>
-
-      <section>
-        <p className={styles.eyebrow}>Payloads</p>
-        <h2 className={styles.sectionTitle}>Product events need enough truth</h2>
-        <div className={styles.payloadGrid}>
-          <span>actor / user IDs</span>
-          <span>object IDs</span>
-          <span>copy inputs</span>
-          <span>occurredAt</span>
-          <span>conversation context</span>
-        </div>
-        <pre className={styles.compactCodeBlock}>
-          <code>{`this.ctx.eventBus.dispatch({
-  type: DOMAIN_EVENTS.ITEM_INTEREST.FIRST_SHOWN,
-  payload: {
-  userId,
-  userName: interestedUser.name || "there",
-  gifterId,
-  giftId: item.gift_id || undefined,
-  giftTitle: item.gift?.name || undefined,
-  itemId,
-  itemTitle: item.title || undefined,
-  shownAt: eventTimestamp,
-  }
-});`}</code>
-        </pre>
-        <p className={styles.caption}>
-          No push provider. No email provider. No inbox write. This service
-          says what happened in the product and stops there.
-        </p>
-      </section>
-
       <section className={styles.centeredContentSlide}>
-        <p className={styles.eyebrow}>System shape</p>
-        <h2 className={styles.sectionTitle}>One event, many surfaces</h2>
-        <MermaidBlock
-          chart={`flowchart LR
-  action[Product action] --> event[Provider-free event]
-  event --> bus[Zod-validated bus]
-  bus --> push[Push]
-  bus --> email[Email]
-  bus --> inbox[Inbox]
-  bus --> tap[Mobile tap path]`}
-        />
-        <pre className={styles.codeBlock}>
-          <code>{`eventBus.dispatch({ type: DOMAIN_EVENTS.[HERO_EVENT], payload });`}</code>
-        </pre>
-      </section>
+        <div className={styles.notificationLifecycleLayout}>
+          <MermaidBlock
+            chart={`flowchart LR
+    Action[Show interest] --> Service[Interest service]
+    Service --> Event[item.interest_added]
+    Event --> Bus[TypedEventBus<br/>parse schema]
+    Bus --> Type[interest_shown<br/>preference key]
+    Type --> Template[Template<br/>copy + link]
+    Template --> Unified[NotificationService.send]
+    Unified --> Prefs{Prefs allow?}
 
-      <section>
-        <p className={styles.eyebrow}>Reference surface</p>
-        <h2 className={styles.sectionTitle}>Pull docs into the room</h2>
-        <div
-          className={`external-doc ${styles.externalDocFrame}`}
-          dangerouslySetInnerHTML={{
-            __html: `<!-- {
-              "src": "https://revealjs.com/react/",
-              "title": "Reveal React docs"
-            } -->`,
-          }}
-        />
-        <p className={styles.caption}>
-          Anything turns this comment-configured placeholder into an iframe,
-          while the slide keeps a direct fallback link.
-        </p>
-      </section>
+    Prefs -- yes --> Delivery[Push / email]
+    Prefs -- no --> Skip[Skip + log]
+    Unified --> Ledger[Ledger<br/>in-app history]
 
-      <section>
-        <p className={styles.eyebrow}>Service boundary</p>
-        <h2 className={styles.sectionTitle}>Handlers turn truth into intent</h2>
-        <pre className={styles.codeBlock}>
-          <code>{`createEventHandler(DOMAIN_EVENTS.ITEM_INTEREST.FIRST_SHOWN, async (payload) => {
-  await sendNotificationFromTemplate(
-    DOMAIN_EVENTS.ITEM_INTEREST.FIRST_SHOWN,
-    payload,
-    payload.userId,
-    notificationService
-  );
-});`}</code>
-        </pre>
-        <ul className={styles.checklist}>
-          <li>Product services never mention providers.</li>
-          <li>Zod validates emitted payloads at runtime.</li>
-          <li>Templates choose copy, channels, and destination metadata.</li>
-        </ul>
-      </section>
+    classDef product fill:#e1f5fe,color:#111827,stroke:#7dd3fc
+    classDef event fill:#fff3e0,color:#111827,stroke:#f2a65a
+    classDef policy fill:#e8f5e8,color:#111827,stroke:#86efac
+    classDef delivery fill:#fce4ec,color:#111827,stroke:#f9a8d4
+    classDef storage fill:#f1f8e9,color:#111827,stroke:#bef264
 
-      <section>
-        <p className={styles.eyebrow}>React Native payoff</p>
-        <h2 className={styles.sectionTitle}>The tap path is architecture</h2>
-        <div className={styles.timeline}>
-          <div>
-            <span className={styles.timelineStep}>01</span>
-            <p>Notification response listener receives the payload.</p>
-          </div>
-          <div>
-            <span className={styles.timelineStep}>02</span>
-            <p>Resolver checks deepLink, screen, legacy type, then inbox fallback.</p>
-          </div>
-          <div>
-            <span className={styles.timelineStep}>03</span>
-            <p>Deep-link dispatch hands off to Expo Router.</p>
-          </div>
+    class Action,Service product
+    class Event,Bus,Type event
+    class Template,Unified,Prefs policy
+    class Delivery,Skip delivery
+    class Ledger storage`}
+            className={styles.notificationLifecycleDiagram}
+          />
         </div>
-        <p className={styles.caption}>
-          Delivery is a backend concern. Landing in the right screen is a product concern.
-        </p>
-      </section>
-
-      <section>
-        <p className={styles.eyebrow}>Walkthrough</p>
-        <h2 className={styles.sectionTitle}>The demo only has to prove three things</h2>
-        <ul className={styles.checklist}>
-          <li>The product event fired.</li>
-          <li>Notification fan-out happened.</li>
-          <li>The tap landed on the intended route.</li>
-        </ul>
         <aside className="notes">
-          Keep the recording under three minutes. Cut anything that does not
-          prove one of these claims.
-        </aside>
-      </section>
-
-      <section>
-        <p className={styles.eyebrow}>Build vs buy</p>
-        <h2 className={styles.sectionTitle}>Vendors are useful once your domain event is clear</h2>
-        <div className={styles.cardGrid}>
-          <article className={styles.card}>
-            <h3>Vendors can own</h3>
-            <p>Campaigns, templates, segmentation, operations, provider failover.</p>
-          </article>
-          <article className={styles.card}>
-            <h3>Your app still owns</h3>
-            <p>What happened, who is eligible, what the tap should do.</p>
-          </article>
-          <article className={styles.card}>
-            <h3>Best combined model</h3>
-            <p>A vendor is one subscriber. The product event remains yours.</p>
-          </article>
-        </div>
-      </section>
-
-      <section>
-        <p className={styles.eyebrow}>Takeaways</p>
-        <h2 className={styles.sectionTitle}>The checklist I use now</h2>
-        <ul className={styles.checklist}>
-          <li>What happened?</li>
-          <li>Who needs to know?</li>
-          <li>Which channels should fire?</li>
-          <li>What should the tap do?</li>
-          <li>What fallback is safe?</li>
-          <li>What gets logged?</li>
-        </ul>
-      </section>
-
-      <section>
-        <p className={styles.eyebrow}>Close</p>
-        <h2 className={styles.bigIdea}>The event bus was not a notification system.</h2>
-        <p className={styles.statement}>
-          It was the boundary that made every notification, and every future
-          side effect, cheaper.
-        </p>
-      </section>
-
-      <section>
-        <p className={styles.eyebrow}>Backup</p>
-        <h2 className={styles.sectionTitle}>Implementation anchors</h2>
-        <ul className={styles.sourceList}>
-          <li>packages/api/src/events/domain-events.ts</li>
-          <li>packages/api/src/events/simple-event-bus.ts</li>
-          <li>packages/api/src/services/receiving/interest-management.service.ts</li>
-          <li>packages/api/src/services/notifications/event-handlers.ts</li>
-          <li>packages/api/src/services/notifications/unified-notification.service.ts</li>
-          <li>packages/api/src/services/notifications/notification-templates.ts</li>
-          <li>packages/app/provider/notifications/NotificationProvider.native.tsx</li>
-          <li>packages/app/services/notificationNavigation.ts</li>
-          <li>packages/app/services/deepLinkHandler.ts</li>
-        </ul>
-      </section>
-
-      <section>
-        <p className={styles.eyebrow}>Backup</p>
-        <h2 className={styles.sectionTitle}>Type-safety proof points</h2>
-        <ul className={styles.sourceList}>
-          <li>DomainEvents[K] gives each event name a compile-time payload shape.</li>
-          <li>domainEventSchemas[event].payload.parse(payload) validates emitted events.</li>
-          <li>domainEventSchemas maps event names to notification types and schemas.</li>
-          <li>notification-templates.ts turns validated domain payloads into channel payloads.</li>
-          <li>event-handlers.ts is the subscription layer between events and delivery.</li>
-        </ul>
-      </section>
-
-      <section>
-        <p className={styles.eyebrow}>Backup</p>
-        <h2 className={styles.sectionTitle}>What this is not</h2>
-        <ul className={styles.checklist}>
-          <li>Not Kafka.</li>
-          <li>Not event sourcing.</li>
-          <li>Not a durable messaging queue.</li>
-          <li>Not a replacement for every notification vendor.</li>
-        </ul>
-      </section>
-
-      <section>
-        <p className={styles.eyebrow}>Speaker Notes</p>
-        <h2 className={styles.sectionTitle}>Speaker view test slide</h2>
-        <p className={styles.caption}>
-          Open speaker view with <code>S</code>. If the setup is working, the
-          audience sees only this slide while the speaker window shows the
-          private notes below.
-        </p>
-        <aside className="notes">
-          This is a speaker-notes test.
-          Confirm that only the speaker window shows this text.
-          Mention the talk title out loud: The event bus is the best investment
-          I made in my React Native app.
-          Advance one slide after confirming the notes are visible.
+          This is the whole thing at a high level. The product service owns the
+          fact that interest was shown. The domain event is item.interest_added.
+          The notification type is interest_shown, which is the template and
+          preference key. The handler bridges those two ideas, and the unified
+          notification service owns the delivery policy. The important
+          operational point is that the product write is already done when the
+          event is emitted. Notification failures are reported separately.
         </aside>
       </section>
     </>
@@ -1609,11 +1878,7 @@ eventBus.emit("item.bid.received", payload);`}</code>
   }
 
   return (
-    <Deck
-      config={revealConfig}
-      onReady={handleReady}
-      plugins={plugins}
-    >
+    <Deck config={revealConfig} onReady={handleReady} plugins={plugins}>
       {slides}
     </Deck>
   );

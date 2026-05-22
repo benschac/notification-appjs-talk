@@ -212,7 +212,95 @@ const notificationServiceSteps = [
 });`,
 ]; 
 
+const preferenceGateSteps = [
+  `createEventHandler(
+  DOMAIN_EVENTS.ITEM.BID_RECEIVED,
+  async (payload) => {
+    await sendNotificationFromTemplate(
+      DOMAIN_EVENTS.ITEM.BID_RECEIVED,
+      payload,
+      payload.sellerId,
+      notificationService
+    );
+  }
+);`,
+  `async function sendNotificationFromTemplate(
+  eventName,
+  payload,
+  recipientId,
+  notificationService,
+  options = {}
+) {
+  const notificationType = domainEventSchemas[eventName].notification;
+  const template = getNotificationTemplate(eventName);
+
+  const push = template.push
+    ? {
+        title: template.push.title(payload),
+        body: template.push.body(payload),
+        data: template.push.data?.(payload),
+      }
+    : undefined;
+
+  const email = template.email
+    ? {
+        subject: template.email.subject(payload),
+        html: await template.email.html(payload),
+      }
+    : undefined;
+
+  return notificationService.send(
+    recipientId,
+    notificationType,
+    { push, email },
+    options.ledgerMetadata,
+    { groupId: options.groupId }
+  );
+}`,
+  `async sendPush(userId, notificationType, payload, groupId) {
+  const prefs = await this.userPreferences.getNotificationPreferences(
+    userId,
+    notificationType,
+    groupId
+  );
+
+  if (prefs.groupEnabled === false) {
+    return skip("Group notifications disabled");
+  }
+
+  if (!prefs.push) {
+    return skip("Push notifications disabled for this type");
+  }
+
+  return this.push.sendToUser({ userId, payload });
+}`,
+  `const preferences =
+  parseNotificationPreferences(profile.notification_preferences) ??
+  getDefaultNotificationPreferences();
+
+const groupEnabled = groupId
+  ? preferences.groups?.[groupId]?.enabled ?? false
+  : true;
+
+return {
+  email:
+    preferences.email.enabled &&
+    (preferences.email.types[notificationType] ?? true) &&
+    groupEnabled,
+  push:
+    preferences.push.enabled &&
+    (preferences.push.types[notificationType] ?? true) &&
+    groupEnabled,
+  groupEnabled,
+};`,
+];
+
 const eventBusTeachingSteps = [
+  `export const DOMAIN_EVENTS = Object.freeze({
+  ITEM: {
+    BID_RECEIVED: "item.bid_received",
+  },
+} as const);`,
   `export const domainEventSchemas = {
   [DOMAIN_EVENTS.ITEM.BID_RECEIVED]: {
     notification: DOMAIN_EVENTS.ITEM.BID_RECEIVED,
@@ -257,26 +345,13 @@ export type DomainEvents = {
 });`,
 ];
 
-const eventRegistryStep = `export const domainEventSchemas = {
-  [DOMAIN_EVENTS.ITEM.BID_RECEIVED]: {
-    notification: DOMAIN_EVENTS.ITEM.BID_RECEIVED,
-    payload: giftUpdatedSchema,
-    template: updatePushDataSchema,
-  },
-} as const;
-
-export type DomainEvents = {
-  [K in keyof typeof domainEventSchemas]:
-    z.infer<(typeof domainEventSchemas)[K]["payload"]>;
-};`;
-
 type TalkCodeSteps = {
   codeMorphSteps: KeyedTokensInfo[];
   directSideEffectSteps: KeyedTokensInfo[];
   eventBusTeachingStep: KeyedTokensInfo[];
-  eventRegistryStep: KeyedTokensInfo[];
   eventEmitStep: KeyedTokensInfo[];
   notificationServiceSteps: KeyedTokensInfo[];
+  preferenceGateSteps: KeyedTokensInfo[];
 };
 
 function compileCodeSteps(
@@ -308,8 +383,8 @@ export const getTalkCodeSteps = cache(async (): Promise<TalkCodeSteps> => {
     codeMorphSteps: compileCodeSteps(highlighter, codeSteps),
     directSideEffectSteps: compileCodeSteps(highlighter, directSideEffectSteps),
     eventBusTeachingStep: compileCodeSteps(highlighter, eventBusTeachingSteps),
-    eventRegistryStep: compileCodeSteps(highlighter, [eventRegistryStep]),
     eventEmitStep: compileCodeSteps(highlighter, [eventEmitStep]),
     notificationServiceSteps: compileCodeSteps(highlighter, notificationServiceSteps),
+    preferenceGateSteps: compileCodeSteps(highlighter, preferenceGateSteps),
   };
 });
