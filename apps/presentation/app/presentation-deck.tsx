@@ -19,12 +19,15 @@ import {
   type AnythingRevealConfig,
 } from "./reveal-anything-plugin";
 import { CodeMorphSlide } from "./code-morph-slide";
+import cellCaseImage from "./cell_case.jpeg";
 import cryingImage from "./crying.png";
 import domainDrivenDesignImage from "./ddd.jpeg";
 import errorEventPayloadImage from "./error_event_payload.png";
 import headshotImage from "./headshot.jpeg";
 import mirroredChatImage from "./mirrored_chat.jpeg";
 import moosePmImage from "./moose_pm.png";
+import jebThankYouImage from "./jeb.gif";
+import notificationServiceProvidersImage from "./legos2.png";
 import notificationIllustration from "./notif_illistration.png";
 import knockLogoImage from "./knocklogo.png";
 import oneSignalLogoImage from "./onesignal.png";
@@ -592,8 +595,8 @@ const eventBusTeachingMessages = [
 const preferenceGateMessages = [
   "The handler stays small: it forwards the typed event payload to the notification template path.",
   "The helper resolves the notification type, renders the template, and hands channels to the unified service.",
-  "Each channel asks the injected preference service before touching Expo or email.",
   "The preference service collapses global, notification-type, and group settings into email/push booleans.",
+  "Each channel asks the injected preference service before touching Expo or email.",
 ];
 
 function EventBusTeachingMorphSlide({
@@ -710,8 +713,8 @@ function EventBusTeachingMorphSlide({
           <li>(morph1) We start out defining our event name.</li>
           <li>(morph2) We create our flux standard action event.</li>
           <li>
-            So what's really nice here is that with just a few short lines of
-            TypeScript, we now have a mapped type.
+            (morph3) So what's really nice here is that with just a few short
+            lines of TypeScript, we now have a mapped type.
           </li>
           <li>
             That can infer the key and specific payload of a notification
@@ -726,20 +729,8 @@ function EventBusTeachingMorphSlide({
           <li>And they fit really nicely into our event emitter.</li>
           <li>Because that's really where we want this strong type safety.</li>
           <li>
-            We want to be parsing our function arguments, and we want to really
-            be explicit about what we're doing so that it's easy to follow, and
-            it's easy to figure out what's going on when something breaks,
-            either in Sentry or when we're building and we get a bunch of type
-            errors.
-          </li>
-          <li>
-            Our good friend, the parse function, as I alluded to earlier,
-            playing a huge role here.
-          </li>
-          <li>
-            And then the final piece of the puzzle here, the contract of the
-            payload that we're sending, is just another thought schema at the end
-            of the day.
+            (morph4) Our good friend, the parse function, as I alluded to
+            earlier, playing a huge role here.
           </li>
         </ul>
       </aside>
@@ -827,6 +818,22 @@ function PayloadSchemaMorphSlide({ steps }: { steps: KeyedTokensInfo[] }) {
           )}
         </div>
       </div>
+      <aside className="notes">
+        <ul>
+          <li>
+            We want to be parsing our function arguments, and we want to really
+            be explicit about what we're doing so that it's easy to follow, and
+            it's easy to figure out what's going on when something breaks,
+            either in Sentry or when we're building and we get a bunch of type
+            errors.
+          </li>
+          <li>
+            And then the final piece of the puzzle here, the contract of the
+            payload that we're sending, is just another thought schema at the end
+            of the day.
+          </li>
+        </ul>
+      </aside>
     </section>
   );
 }
@@ -941,13 +948,21 @@ function PreferenceGateMorphSlide({
         />
       ))}
       <aside className="notes">
-        So this is the full loop in a tiny version. The service fires the event
-        after the action is taken. The event handler passes the payload into the
-        notification template. The template builds the push and email payloads,
-        then the unified notification service takes over. That is where user
-        preferences become a delivery policy: before Expo or email gets called,
-        we check whether this user wants this notification type, in this
-        channel, and optionally for this group.
+        <ul>
+          <li>(morph1) The service fires the event after the action is taken.</li>
+          <li>
+            (morph2) The event handler passes the payload into the notification
+            template.
+          </li>
+          <li>
+            Before Expo or email gets called, we check whether this user wants
+            this notification type, in this channel, and optionally for this
+            group.
+          </li>
+          <li>
+            The template builds the push and email payloads.
+          </li>
+        </ul>
       </aside>
     </section>
   );
@@ -960,6 +975,7 @@ export function PresentationDeck({
   eventEmitStep,
   notificationServiceSteps,
   preferenceGateSteps,
+  sendPushPreferenceStep,
   snapshot,
 }: {
   codeMorphSteps: KeyedTokensInfo[];
@@ -968,6 +984,7 @@ export function PresentationDeck({
   eventEmitStep: KeyedTokensInfo[];
   notificationServiceSteps: KeyedTokensInfo[];
   preferenceGateSteps: KeyedTokensInfo[];
+  sendPushPreferenceStep: KeyedTokensInfo[];
   snapshot: TalkSnapshot;
 }) {
   const deckRef = useRef<HTMLDivElement>(null);
@@ -1813,7 +1830,14 @@ eventBus.emit("item.bid.received", payload);`}</code>
           src={errorEventPayloadImage}
         />
         <aside className="notes">
-          The moment we've been waiting for: the humble red squiggle
+          <ul>
+            <li>The moment we've been waiting for: the humble red squiggle</li>
+            <li>
+              Having strong type safety especially in A large system is worth
+              its weight in gold. Giving both myself and my AI coding agent
+              granular errors that are easy to trace and resolve.
+            </li>
+          </ul>
         </aside>
       </section>
       <CodeMorphSlide
@@ -1857,14 +1881,114 @@ eventBus.emit("item.bid.received", payload);`}</code>
           />
         </div>
         <aside className="notes">
-          This is the whole thing at a high level. The product service owns the
-          fact that interest was shown. The domain event is item.interest_added.
-          The notification type is interest_shown, which is the template and
-          preference key. The handler bridges those two ideas, and the unified
-          notification service owns the delivery policy. The important
-          operational point is that the product write is already done when the
-          event is emitted. Notification failures are reported separately.
+          <ul>
+            <li>This is the whole thing at a high level.</li>
+            <li>
+              The product service owns the fact that interest was shown.
+            </li>
+            <li>The domain event is item.interest_added.</li>
+            <li>
+              The notification type is interest_shown, which is the template and
+              preference key.
+            </li>
+            <li>
+              The handler bridges those two ideas, and the unified notification
+              service owns the delivery policy.
+            </li>
+            <li>
+              The important operational point is that the product write is
+              already done when the event is emitted.
+            </li>
+            <li>Notification failures are reported separately.</li>
+          </ul>
         </aside>
+      </section>
+
+      <section className={styles.centeredContentSlide}>
+        <div className={styles.providerInjectionLayout}>
+          <h2 className={styles.providerInjectionTitle}>
+            The service only knows the contract
+          </h2>
+          <Image
+            src={notificationServiceProvidersImage}
+            alt="NotificationService receives push, email, user preferences, and notification ledger providers"
+            className={styles.providerInjectionImage}
+            sizes="(min-width: 1200px) 80rem, 92vw"
+          />
+        </div>
+        <aside className="notes">
+          <ul>
+            <li>
+              Push, email, preferences, and ledger are providers that get passed
+              in.
+            </li>
+            <li>The service only needs a method it can call.</li>
+            <li>
+              That keeps channel implementation details outside the orchestration
+              code.
+            </li>
+          </ul>
+        </aside>
+      </section>
+
+      <section className={styles.centeredContentSlide}>
+        <StaticHighlightedCodeBlock
+          className={styles.sendPushPreferenceCode}
+          steps={sendPushPreferenceStep}
+        />
+      </section>
+
+      <section className={styles.centeredContentSlide}>
+        <div className={styles.notificationLoopLayout}>
+          <h2 className={styles.notificationLoopTitle}>The loop closes</h2>
+          <MermaidBlock
+            chart={`flowchart LR
+    User((User)) --> BusinessLogic((Business<br/>logic))
+    BusinessLogic --> Event((Event))
+    Event --> Handler((Handler))
+    Handler --> Service((Service<br/>with DI))
+    Service --> User
+
+    classDef user fill:#e1f5fe,color:#111827,stroke:#7dd3fc,stroke-width:3px
+    classDef business fill:#fef3c7,color:#111827,stroke:#fbbf24,stroke-width:3px
+    classDef event fill:#fff3e0,color:#111827,stroke:#f2a65a,stroke-width:3px
+    classDef handler fill:#f3e8ff,color:#111827,stroke:#c084fc,stroke-width:3px
+    classDef service fill:#e8f5e8,color:#111827,stroke:#86efac,stroke-width:3px
+
+    class User user
+    class BusinessLogic business
+    class Event event
+    class Handler handler
+    class Service service`}
+            className={styles.notificationLoopDiagram}
+          />
+        </div>
+      </section>
+
+      <section className={styles.centeredContentSlide}>
+        <div className={styles.cellCaseLayout}>
+          <h2 className={styles.cellCaseTitle}>
+            And that&apos;s how I got this cell phone case
+          </h2>
+          <Image
+            src={cellCaseImage}
+            alt="Pink cell phone case on a wooden table"
+            className={styles.cellCaseImage}
+            sizes="(min-width: 1200px) 36rem, 72vw"
+          />
+        </div>
+      </section>
+
+      <section className={styles.centeredContentSlide}>
+        <div className={styles.thankYouLayout}>
+          <h2 className={styles.thankYouTitle}>Thank you</h2>
+          <Image
+            src={jebThankYouImage}
+            alt="Jeb Bush saying thank you"
+            className={styles.thankYouImage}
+            unoptimized
+          />
+        </div>
       </section>
     </>
   );

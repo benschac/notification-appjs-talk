@@ -257,23 +257,6 @@ const preferenceGateSteps = [
     { groupId: options.groupId }
   );
 }`,
-  `async sendPush(userId, notificationType, payload, groupId) {
-  const prefs = await this.userPreferences.getNotificationPreferences(
-    userId,
-    notificationType,
-    groupId
-  );
-
-  if (prefs.groupEnabled === false) {
-    return skip("Group notifications disabled");
-  }
-
-  if (!prefs.push) {
-    return skip("Push notifications disabled for this type");
-  }
-
-  return this.push.sendToUser({ userId, payload });
-}`,
   `const preferences =
   parseNotificationPreferences(profile.notification_preferences) ??
   getDefaultNotificationPreferences();
@@ -293,6 +276,23 @@ return {
     groupEnabled,
   groupEnabled,
 };`,
+  `async send(userId, notificationType, payload, groupId) {
+  const prefs = await this.userPreferences.getNotificationPreferences(
+    userId,
+    notificationType,
+    groupId
+  );
+
+  if (prefs.groupEnabled === false) {
+    return skip("Group notifications disabled");
+  }
+
+  if (!prefs.push) {
+    return skip("Push notifications disabled for this type");
+  }
+
+  return this.push.sendToUser({ userId, payload });
+}`,
 ];
 
 const eventBusTeachingSteps = [
@@ -345,6 +345,19 @@ export type DomainEvents = {
 });`,
 ];
 
+const sendPushPreferenceStep = `async sendPush(
+  userId: string,
+  notificationType: NotificationTypeKey,
+  payload: Parameters<PushNotificationService['sendToUser']>[0]['payload'],
+  groupId?: string
+): Promise<ChannelResult> {
+  const prefs = await this.userPreferences.getNotificationPreferences(
+    userId,
+    notificationType,
+    groupId
+  )
+}`;
+
 type TalkCodeSteps = {
   codeMorphSteps: KeyedTokensInfo[];
   directSideEffectSteps: KeyedTokensInfo[];
@@ -352,6 +365,7 @@ type TalkCodeSteps = {
   eventEmitStep: KeyedTokensInfo[];
   notificationServiceSteps: KeyedTokensInfo[];
   preferenceGateSteps: KeyedTokensInfo[];
+  sendPushPreferenceStep: KeyedTokensInfo[];
 };
 
 function compileCodeSteps(
@@ -386,5 +400,6 @@ export const getTalkCodeSteps = cache(async (): Promise<TalkCodeSteps> => {
     eventEmitStep: compileCodeSteps(highlighter, [eventEmitStep]),
     notificationServiceSteps: compileCodeSteps(highlighter, notificationServiceSteps),
     preferenceGateSteps: compileCodeSteps(highlighter, preferenceGateSteps),
+    sendPushPreferenceStep: compileCodeSteps(highlighter, [sendPushPreferenceStep]),
   };
 });

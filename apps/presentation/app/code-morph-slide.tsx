@@ -224,7 +224,22 @@ export function CodeMorphSlide({
         />
       ))}
       <aside className="notes">
-      So now that we have this typed event bus working, we have our domain-driven events. Now we start to think about how it's all going to start to come together. Dependency injection makes this really simple. We can plug in Expo push notifications, or resend emails, our user preferences, notification ledger for in-app notifications, and you know, a configuration object, because you know why not?
+        <ul>
+          <li>
+            So now that we have this typed event bus working, we have our
+            domain-driven events.
+          </li>
+          <li>
+            Now we start to think about how it's all going to start to come
+            together.
+          </li>
+          <li>Dependency injection makes this really simple.</li>
+          <li>
+            We can plug in Expo push notifications, or resend emails, our user
+            preferences, notification ledger for in-app notifications, and you
+            know, a configuration object, because you know why not?
+          </li>
+        </ul>
       </aside>
     </section>
   );

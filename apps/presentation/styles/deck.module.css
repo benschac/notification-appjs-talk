@@ -560,6 +560,127 @@
   max-height: 68vh;
 }
 
+.providerInjectionLayout {
+  display: grid;
+  gap: 1.1rem;
+  justify-items: center;
+  width: min(100%, 96rem);
+}
+
+.providerInjectionTitle {
+  max-width: 20ch;
+  margin: 0;
+  color: #fbf8f2;
+  font-size: clamp(2.2rem, 4vw, 4rem);
+  line-height: 0.96;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.providerInjectionImage {
+  width: auto;
+  max-width: min(100%, 86rem);
+  max-height: 66vh;
+  height: auto;
+  margin: 0;
+  object-fit: contain;
+}
+
+.notificationLoopLayout {
+  display: grid;
+  gap: 1.25rem;
+  justify-items: center;
+  width: min(100%, 88rem);
+}
+
+.notificationLoopTitle {
+  margin: 0;
+  color: #fbf8f2;
+  font-size: clamp(2.4rem, 4.8vw, 4.6rem);
+  line-height: 0.96;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.notificationLoopDiagram {
+  width: min(100%, 82rem);
+  margin: 0;
+  padding: 1.4rem;
+}
+
+.notificationLoopDiagram svg {
+  max-height: 58vh;
+}
+
+.sendPushPreferenceCode {
+  width: min(100%, 90rem);
+  max-width: 90rem;
+  padding: 1.25rem;
+  overflow-x: hidden;
+}
+
+.sendPushPreferenceCode pre {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  font-size: clamp(0.9rem, 1.18vw, 1.12rem);
+  line-height: 1.28;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.cellCaseLayout {
+  display: grid;
+  gap: 1.2rem;
+  justify-items: center;
+  width: min(100%, 84rem);
+}
+
+.cellCaseTitle {
+  max-width: 21ch;
+  margin: 0;
+  color: #fbf8f2;
+  font-size: clamp(2.4rem, 4.8vw, 4.6rem);
+  line-height: 0.96;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.cellCaseImage {
+  width: auto;
+  max-width: min(100%, 38rem);
+  max-height: 62vh;
+  height: auto;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 1.2rem;
+  box-shadow: 0 28px 85px rgba(0, 0, 0, 0.38);
+  object-fit: contain;
+}
+
+.thankYouLayout {
+  display: grid;
+  gap: 1.5rem;
+  justify-items: center;
+  width: min(100%, 76rem);
+}
+
+.thankYouTitle {
+  margin: 0;
+  color: #fbf8f2;
+  font-size: clamp(4rem, 9vw, 8.5rem);
+  line-height: 0.9;
+  text-align: center;
+}
+
+.thankYouImage {
+  width: min(100%, 36rem);
+  height: auto;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 1.2rem;
+  box-shadow: 0 28px 85px rgba(0, 0, 0, 0.38);
+  object-fit: contain;
+}
+
 .provenTechnologyLayout {
   display: grid;
   gap: 2rem;
