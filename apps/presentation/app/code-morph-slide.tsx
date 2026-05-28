@@ -18,11 +18,7 @@ type RevealEvent = {
   fragment?: Element | null;
 };
 
-const stepMessages = [
-  "Direct side effects feel fine until each new surface adds another required call site.",
-  "One more service means touching the same business flow again, more chances to break something.",
-  "Emit one rich event instead and let handlers own push, email, inbox, chat, and navigation side effects.",
-];
+const stepMessages = ["", "", ""];
 
 const codeMorphOptions = {
   animateContainer: false,

@@ -1,6 +1,10 @@
 import { cache } from "react";
 import { createHighlighter } from "shiki";
-import { codeToKeyedTokens, createMagicMoveMachine, type KeyedTokensInfo } from "shiki-magic-move/core";
+import {
+  codeToKeyedTokens,
+  createMagicMoveMachine,
+  type KeyedTokensInfo,
+} from "shiki-magic-move/core";
 
 const directSideEffectSteps = [
   `await bidOnItem(itemId, amount);`,
@@ -210,7 +214,7 @@ const notificationServiceSteps = [
   ledger: notificationLedgerRepository,
   defaults: { batch: { useEmailQueue: true } },
 });`,
-]; 
+];
 
 const preferenceGateSteps = [
   `createEventHandler(
@@ -234,20 +238,16 @@ const preferenceGateSteps = [
   const notificationType = domainEventSchemas[eventName].notification;
   const template = getNotificationTemplate(eventName);
 
-  const push = template.push
-    ? {
-        title: template.push.title(payload),
-        body: template.push.body(payload),
-        data: template.push.data?.(payload),
-      }
-    : undefined;
+  const push = template.push && {
+    title: template.push.title(payload),
+    body: template.push.body(payload),
+    data: template.push.data?.(payload),
+  };
 
-  const email = template.email
-    ? {
-        subject: template.email.subject(payload),
-        html: await template.email.html(payload),
-      }
-    : undefined;
+  const email = template.email && {
+    subject: template.email.subject(payload),
+    html: await template.email.html(payload),
+  };
 
   return notificationService.send(
     recipientId,
@@ -261,20 +261,13 @@ const preferenceGateSteps = [
   parseNotificationPreferences(profile.notification_preferences) ??
   getDefaultNotificationPreferences();
 
-const groupEnabled = groupId
-  ? preferences.groups?.[groupId]?.enabled ?? false
-  : true;
-
 return {
   email:
     preferences.email.enabled &&
-    (preferences.email.types[notificationType] ?? true) &&
-    groupEnabled,
+    (preferences.email.types[notificationType] ?? true),
   push:
     preferences.push.enabled &&
-    (preferences.push.types[notificationType] ?? true) &&
-    groupEnabled,
-  groupEnabled,
+    (preferences.push.types[notificationType] ?? true),
 };`,
   `async send(userId, notificationType, payload, groupId) {
   const prefs = await this.userPreferences.getNotificationPreferences(
@@ -282,10 +275,6 @@ return {
     notificationType,
     groupId
   );
-
-  if (prefs.groupEnabled === false) {
-    return skip("Group notifications disabled");
-  }
 
   if (!prefs.push) {
     return skip("Push notifications disabled for this type");
@@ -349,7 +338,6 @@ const sendPushPreferenceStep = `async sendPush(
   userId: string,
   notificationType: NotificationTypeKey,
   payload: Parameters<PushNotificationService['sendToUser']>[0]['payload'],
-  groupId?: string
 ): Promise<ChannelResult> {
   const prefs = await this.userPreferences.getNotificationPreferences(
     userId,
@@ -398,8 +386,13 @@ export const getTalkCodeSteps = cache(async (): Promise<TalkCodeSteps> => {
     directSideEffectSteps: compileCodeSteps(highlighter, directSideEffectSteps),
     eventBusTeachingStep: compileCodeSteps(highlighter, eventBusTeachingSteps),
     eventEmitStep: compileCodeSteps(highlighter, [eventEmitStep]),
-    notificationServiceSteps: compileCodeSteps(highlighter, notificationServiceSteps),
+    notificationServiceSteps: compileCodeSteps(
+      highlighter,
+      notificationServiceSteps,
+    ),
     preferenceGateSteps: compileCodeSteps(highlighter, preferenceGateSteps),
-    sendPushPreferenceStep: compileCodeSteps(highlighter, [sendPushPreferenceStep]),
+    sendPushPreferenceStep: compileCodeSteps(highlighter, [
+      sendPushPreferenceStep,
+    ]),
   };
 });

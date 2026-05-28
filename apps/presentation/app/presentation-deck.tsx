@@ -32,6 +32,7 @@ import notificationCenterImage from "./notifs_phone_screen.jpeg";
 import jebThankYouImage from "./jeb.gif";
 import notificationServiceProvidersImage from "./legos2.png";
 import notificationIllustration from "./notif_illistration.png";
+import notificationOffImage from "./notif_off.png";
 import knockLogoImage from "./knocklogo.png";
 import oneSignalLogoImage from "./onesignal.png";
 import preferencesImage from "./preferences.png";
@@ -694,11 +695,6 @@ function ProgressiveCodeFrame({
         />
       ))}
       <aside className="notes">
-        <p>
-          You start with your business logic. A user does a thing. Update our
-          database. And great. Problem solved. Right, but we&apos;re going to
-          need a notification. Alright,
-        </p>
         <ul>
           <li>
             Not so bad. But not everyone has push notifications enabled, so we
@@ -778,9 +774,9 @@ const eventBusTeachingMessages = [
 ];
 
 const preferenceGateMessages = [
-  "The handler stays small: it forwards the typed event payload to the notification template path.",
-  "The helper resolves the notification type, renders the template, and hands channels to the unified service.",
-  "The preference service collapses global, notification-type, and group settings into email/push booleans.",
+  "The handler forwards the typed event payload to the notification template path.",
+  "Resolve the notification payload, renders the template, and hands channels to the unified service.",
+  "The preference service collapses global, notification-types into email/push booleans.",
   "Each channel asks the injected preference service before touching Expo or email.",
 ];
 
@@ -855,7 +851,7 @@ function EventBusTeachingMorphSlide({
   return (
     <section
       ref={sectionRef}
-      className={styles.centeredContentSlide}
+      className={`${styles.centeredContentSlide} ${styles.eventBusTeachingSlide}`}
       data-auto-animate
       data-auto-animate-duration="0.7"
       data-auto-animate-easing="cubic-bezier(0.22, 1, 0.36, 1)"
@@ -974,10 +970,7 @@ function PayloadSchemaMorphSlide({ steps }: { steps: KeyedTokensInfo[] }) {
     >
       <div className={styles.eventBusTeachingLayout}>
         <div>
-          <p className={styles.eyebrow}>Payload schema</p>
-          <h2 className={styles.eventRegistryTitle}>
-            The payload contract is a Zod schema.
-          </h2>
+          <h2 className={styles.eventRegistryTitle}>The payload contract</h2>
         </div>
         <div
           data-id="typed-event-bus-code-frame"
@@ -1371,6 +1364,16 @@ export function PresentationDeck({
         </aside>
       </section>
 
+      <section className={styles.notificationFailureSlide}>
+        <Image
+          alt="Notification bell crossed out"
+          className={styles.notificationFailureImage}
+          sizes="38rem"
+          src={notificationOffImage}
+        />
+        <p className={styles.notificationFailureText}>failure</p>
+      </section>
+
       <section className={styles.centeredContentSlide}>
         <Image
           alt="Expo Notifications documentation page"
@@ -1398,21 +1401,15 @@ export function PresentationDeck({
         </aside>
       </section>
 
-      <ProgressiveCodeFrame deck={deck} steps={directSideEffectSteps} />
-
-      <CodeMorphSlide
-        deck={deck}
-        frameDataId="event-bus-code-frame"
-        fragmentSteps={[2]}
-        initialStep={1}
-        layout="hero"
-        showCopy={false}
-        steps={codeMorphSteps}
-        subtitle=""
-        title=""
-      />
-
       <NotificationTypeCloudSection deck={deck} types={notificationTypes} />
+
+      <section className={styles.centeredContentSlide}>
+        <h2
+          className={`${styles.fullWidthPunchline} ${styles.oversizedMetric}`}
+        >
+          672
+        </h2>
+      </section>
 
       <section className={styles.centeredContentSlide}>
         <Image
@@ -1421,6 +1418,60 @@ export function PresentationDeck({
           sizes="42rem"
           src={notificationCenterImage}
         />
+      </section>
+
+      <section className={styles.centerQuestionSlide}>
+        <h2 className={`${styles.sectionTitle} ${styles.wideQuestionTitle}`}>
+          In-app notifications?
+        </h2>
+        <aside className="notes">
+          But sometimes people's phones have a lot of notifications, and it's
+          easy for them to just check the in-app notifications tab. Because we
+          really don't want our users to miss important notifications
+        </aside>
+      </section>
+
+      <section className={styles.centeredContentSlide}>
+        <Image
+          alt="Treasure It in-app notifications inbox"
+          className={styles.notificationCenterImage}
+          sizes="42rem"
+          src={inAppNotificationsImage}
+        />
+      </section>
+
+      <section className={styles.centeredContentSlide}>
+        <div className={styles.chatNotificationLayout}>
+          <h2 className={styles.chatNotificationTitle}>System Messages</h2>
+          <Image
+            alt="Treasure It in-chat notification timeline"
+            className={styles.chatNotificationImage}
+            sizes="32rem"
+            src={mirroredChatImage}
+          />
+        </div>
+        <aside className="notes">
+          <ul>
+            <li>
+              Then, as one does, you become a power user of your own app, and
+              you realize that your in-app notifications are just a mess.
+            </li>
+            <li>
+              There's so much going on between 10 different people coordinating
+              like six different pickups that you're still missing the signal
+              from the noise.
+            </li>
+            <li>
+              To solve this, mirror these notifications as a system message in
+              line with the user that you're chatting with to make the exchange
+              with.
+            </li>
+            <li>
+              It becomes even harder to forget what happened or when you're
+              supposed to be somewhere.
+            </li>
+          </ul>
+        </aside>
       </section>
 
       <section className={styles.centerQuestionSlide}>
@@ -1464,98 +1515,13 @@ export function PresentationDeck({
           </ul>
         </aside>
       </section>
-
       <section className={styles.centerQuestionSlide}>
         <h2 className={`${styles.sectionTitle} ${styles.wideQuestionTitle}`}>
-          What happens when you need to support in-app notifications?
-        </h2>
-        <aside className="notes">
-          But sometimes people's phones have a lot of notifications, and it's
-          easy for them to just check the in-app notifications tab. Because we
-          really don't want our users to miss important notifications
-        </aside>
-      </section>
-
-      <section className={styles.centeredContentSlide}>
-        <Image
-          alt="Treasure It in-app notifications inbox"
-          className={styles.notificationCenterImage}
-          sizes="42rem"
-          src={inAppNotificationsImage}
-        />
-      </section>
-
-      <section className={styles.centeredContentSlide}>
-        <div className={styles.chatNotificationLayout}>
-          <h2 className={styles.chatNotificationTitle}>
-            Or in chat notifications
-          </h2>
-          <Image
-            alt="Treasure It in-chat notification timeline"
-            className={styles.chatNotificationImage}
-            sizes="32rem"
-            src={mirroredChatImage}
-          />
-        </div>
-        <aside className="notes">
-          <ul>
-            <li>
-              Then, as one does, you become a power user of your own app, and
-              you realize that your in-app notifications are just a mess.
-            </li>
-            <li>
-              There's so much going on between 10 different people coordinating
-              like six different pickups that you're still missing the signal
-              from the noise.
-            </li>
-            <li>
-              To solve this, mirror these notifications as a system message in
-              line with the user that you're chatting with to make the exchange
-              with.
-            </li>
-            <li>
-              It becomes even harder to forget what happened or when you're
-              supposed to be somewhere.
-            </li>
-          </ul>
-        </aside>
-      </section>
-
-      <section className={styles.centerQuestionSlide}>
-        <h2 className={`${styles.sectionTitle} ${styles.wideQuestionTitle}`}>
-          Oh, and some notifications are only for premium users.
+          Oh, and some notifications are only for premium users
         </h2>
         <aside className="notes">
           And we have additional notifications that are only for premium users
           because, Business and numbers.
-        </aside>
-      </section>
-
-      <section className={styles.centeredContentSlide}>
-        <div className={styles.preferencesLayout}>
-          <h2 className={styles.preferencesTitle}>
-            Don't forget about your users' preferences
-          </h2>
-          <Image
-            alt="Treasure It notification preferences screen"
-            className={styles.preferencesImage}
-            sizes="30rem"
-            src={preferencesImage}
-          />
-        </div>
-        <aside className="notes">
-          <ul>
-            <li>
-              Users kept telling me over and over again that the platforms today
-              will send you messages that are just noise and spam.
-            </li>
-            <li>
-              And we need to make sure that our users can configure
-              notifications to their heart's desire, that they are in full
-              control, and they'll get the messages that they need.
-            </li>
-            <li>Nothing more, nothing less.</li>
-          </ul>
         </aside>
       </section>
 
@@ -1589,6 +1555,48 @@ export function PresentationDeck({
             </li>
             <li>So, how do we solve this problem?</li>
             <li>Calmly and thoughtfully,</li>
+          </ul>
+        </aside>
+      </section>
+
+      <ProgressiveCodeFrame deck={deck} steps={directSideEffectSteps} />
+
+      <CodeMorphSlide
+        deck={deck}
+        frameDataId="event-bus-code-frame"
+        fragmentSteps={[2]}
+        initialStep={1}
+        layout="hero"
+        showCopy={false}
+        steps={codeMorphSteps}
+        subtitle=""
+        title=""
+      />
+
+      <section className={styles.centeredContentSlide}>
+        <div className={styles.preferencesLayout}>
+          <h2 className={styles.preferencesTitle}>
+            Don't forget about your users' preferences
+          </h2>
+          <Image
+            alt="Treasure It notification preferences screen"
+            className={styles.preferencesImage}
+            sizes="30rem"
+            src={preferencesImage}
+          />
+        </div>
+        <aside className="notes">
+          <ul>
+            <li>
+              Users kept telling me over and over again that the platforms today
+              will send you messages that are just noise and spam.
+            </li>
+            <li>
+              And we need to make sure that our users can configure
+              notifications to their heart's desire, that they are in full
+              control, and they'll get the messages that they need.
+            </li>
+            <li>Nothing more, nothing less.</li>
           </ul>
         </aside>
       </section>
@@ -1899,9 +1907,6 @@ eventBus.emit("item.bid.received", payload);`}</code>
 
       <section className={styles.centeredContentSlide}>
         <div className={styles.solutionDiagramLayout}>
-          <h2 className={styles.solutionDiagramTitle}>
-            It's really not so bad
-          </h2>
           <MermaidBlock
             chart={`graph TB
     Service[Domain service] --> EventBus[Typed Event Bus]
@@ -1968,8 +1973,6 @@ eventBus.emit("item.bid.received", payload);`}</code>
       <PreferenceGateMorphSlide deck={deck} steps={preferenceGateSteps} />
       <section className={styles.centeredContentSlide}>
         <div>
-          <p className={styles.eyebrow}>Schema registry</p>
-          <h2 className={styles.bigIdea}>Our contract</h2>
           <p className={styles.statement}>
             The event name owns the payload shape, the runtime validation, and
             the TypeScript type every subscriber sees.
@@ -1982,19 +1985,20 @@ eventBus.emit("item.bid.received", payload);`}</code>
         </aside>
       </section>
       <section>
-        <h2 className={styles.sectionTitle}>
-          And now all of our work finally pays off.
-        </h2>
-      </section>
-      <section>
         <Image
           alt="Standard action code showing commerce activation buyer match credit request"
           className={styles.standardActionImage}
           priority
-          sizes="88rem"
+          sizes="104rem"
           src={standardActionImage}
         />
         <aside className="notes">The type inference.</aside>
+      </section>
+
+      <section className={styles.centerQuestionSlide}>
+        <h2 className={styles.sectionTitle}>
+          And now all of our work finally pays off
+        </h2>
       </section>
 
       <section className={styles.centerQuestionSlide}>
@@ -2024,10 +2028,10 @@ eventBus.emit("item.bid.received", payload);`}</code>
         initialStep={0}
         layout="hero"
         steps={notificationServiceSteps}
-        subtitle="Start with one service. Then make the delivery boundaries explicit."
+        subtitle=""
         title="Dependency injection"
       />
-      <section className={styles.centeredContentSlide}>
+      {/* <section className={styles.centeredContentSlide}>
         <div className={styles.notificationLifecycleLayout}>
           <MermaidBlock
             chart={`flowchart LR
@@ -2077,7 +2081,7 @@ eventBus.emit("item.bid.received", payload);`}</code>
             <li>Notification failures are reported separately.</li>
           </ul>
         </aside>
-      </section>
+      </section> */}
 
       <section className={styles.centeredContentSlide}>
         <div className={styles.providerInjectionLayout}>
