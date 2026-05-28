@@ -56,7 +56,8 @@ export function CodeMorphSlide({
   const [isMounted, setIsMounted] = useState(false);
   const [step, setStep] = useState(initialStep);
   const sectionRef = useRef<HTMLElement>(null);
-  const isNotificationServiceSlide = frameDataId === "notification-service-code-frame";
+  const isNotificationServiceSlide =
+    frameDataId === "notification-service-code-frame";
   const stepMessage = stepMessages[step] ?? subtitle;
 
   useEffect(() => {
@@ -70,7 +71,10 @@ export function CodeMorphSlide({
 
     const section = sectionRef.current;
 
-    const syncStep = (event: RevealEvent, direction: "forward" | "backward") => {
+    const syncStep = (
+      event: RevealEvent,
+      direction: "forward" | "backward",
+    ) => {
       const fragment = event.fragment;
 
       if (!fragment || fragment.closest("section") !== section) {
@@ -115,7 +119,9 @@ export function CodeMorphSlide({
     <div
       data-id={frameDataId}
       className={`${styles.magicMoveFrame} ${
-        layout === "hero" ? styles.magicMoveFrameHero : styles.magicMoveFrameAnalysis
+        layout === "hero"
+          ? styles.magicMoveFrameHero
+          : styles.magicMoveFrameAnalysis
       }`}
     >
       {isMounted ? (
@@ -145,7 +151,9 @@ export function CodeMorphSlide({
         data-auto-animate-easing="cubic-bezier(0.22, 1, 0.36, 1)"
         data-auto-animate-id="event-bus-code-journey"
       >
-        <p className={styles.codeOnlyStatement}>These are all just side effects.</p>
+        <p className={styles.codeOnlyStatement}>
+          These are all just side effects
+        </p>
         <div
           className={`${styles.codeMemeLayout} ${
             showUseEffectMeme ? styles.codeMemeLayoutVisible : ""
@@ -174,7 +182,10 @@ export function CodeMorphSlide({
           />
         ))}
         <aside className="notes">
-        When you start thinking that this isn't the primary use case, all these are just side effects. Something that I'd expect in a use effect hook, or maybe a redux thunk. We're making calls to systems that we don't control outside of our core business logic.
+          When you start thinking that this isn't the primary use case, all
+          these are just side effects. Something that I'd expect in a use effect
+          hook, or maybe a redux thunk. We're making calls to systems that we
+          don't control outside of our core business logic.
         </aside>
       </section>
     );
@@ -184,7 +195,9 @@ export function CodeMorphSlide({
     <section
       ref={sectionRef}
       className={`${layout === "hero" ? styles.magicMoveSectionHero : styles.magicMoveSectionAnalysis} ${
-        isNotificationServiceSlide ? styles.magicMoveSectionDependencyInjection : ""
+        isNotificationServiceSlide
+          ? styles.magicMoveSectionDependencyInjection
+          : ""
       }`}
       data-auto-animate
       data-auto-animate-duration="0.7"
@@ -212,8 +225,12 @@ export function CodeMorphSlide({
             <p className={styles.magicMoveMessage}>{stepMessage}</p>
             <p className={styles.magicMoveAnalysisBody}>{subtitle}</p>
             <ul className={styles.magicMoveChecklist}>
-              <li>Step 1: direct notification calls live inside the mutation</li>
-              <li>Step 2: another consumer makes the flow wider and more fragile</li>
+              <li>
+                Step 1: direct notification calls live inside the mutation
+              </li>
+              <li>
+                Step 2: another consumer makes the flow wider and more fragile
+              </li>
               <li>Step 3: one emitted event fans out to dedicated handlers</li>
             </ul>
           </div>

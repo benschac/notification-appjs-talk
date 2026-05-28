@@ -3,7 +3,7 @@
 import { Deck } from "@revealjs/react";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { animate } from "animejs";
+import { animate, stagger } from "animejs";
 import Notes from "reveal.js/plugin/notes";
 import { ShikiMagicMovePrecompiled } from "shiki-magic-move/react";
 import type {
@@ -23,9 +23,12 @@ import cellCaseImage from "./cell_case.jpeg";
 import cryingImage from "./crying.png";
 import domainDrivenDesignImage from "./ddd.jpeg";
 import errorEventPayloadImage from "./error_event_payload.png";
+import expoDocsHomepageImage from "./expo-docs-homepage.png";
 import headshotImage from "./headshot.jpeg";
+import inAppNotificationsImage from "./inapp_notifs.png";
 import mirroredChatImage from "./mirrored_chat.jpeg";
 import moosePmImage from "./moose_pm.png";
+import notificationCenterImage from "./notifs_phone_screen.jpeg";
 import jebThankYouImage from "./jeb.gif";
 import notificationServiceProvidersImage from "./legos2.png";
 import notificationIllustration from "./notif_illistration.png";
@@ -183,13 +186,65 @@ const notificationTypes = [
   "publish_post_rejected",
 ];
 
-const CLOUD_ANIMATION_DURATION = 1100;
+const INITIAL_NOTIFICATION_REVEAL_COUNT = 1;
+const NOTIFICATION_REVEAL_MILESTONES = [2, 3, 4] as const;
+const CLOUD_ANIMATION_DURATION = 680;
+const CLOUD_FULL_REVEAL_ANIMATION_DURATION = 980;
+const HIDDEN_NOTIFICATION_BUBBLE_TRANSFORM =
+  "translate3d(0px, 36px, -180px) rotateX(8deg) rotateY(2deg) scale(0.68)";
+const VISIBLE_NOTIFICATION_BUBBLE_TRANSFORM =
+  "translate3d(0px, 0px, 0px) rotateX(0deg) rotateY(0deg) scale(1)";
 
-function NotificationTypeCloudSection({ types }: { types: string[] }) {
+function clampNotificationRevealCount(count: number, totalCount: number) {
+  return Math.min(
+    Math.max(INITIAL_NOTIFICATION_REVEAL_COUNT, count),
+    totalCount,
+  );
+}
+
+function getNotificationRevealCounts(totalCount: number) {
+  return Array.from(
+    new Set(
+      [...NOTIFICATION_REVEAL_MILESTONES, totalCount].filter(
+        (count) =>
+          count > INITIAL_NOTIFICATION_REVEAL_COUNT && count <= totalCount,
+      ),
+    ),
+  );
+}
+
+function hideNotificationBubble(bubble: HTMLSpanElement) {
+  bubble.style.opacity = "0";
+  bubble.style.transform = HIDDEN_NOTIFICATION_BUBBLE_TRANSFORM;
+  bubble.style.filter = "blur(8px)";
+}
+
+function showNotificationBubble(bubble: HTMLSpanElement) {
+  bubble.style.opacity = "1";
+  bubble.style.transform = VISIBLE_NOTIFICATION_BUBBLE_TRANSFORM;
+  bubble.style.filter = "blur(0px)";
+}
+
+function NotificationTypeCloudSection({
+  deck,
+  types,
+}: {
+  deck: RevealDeck | null;
+  types: string[];
+}) {
   const uniqueTypes = useMemo(() => Array.from(new Set(types)), [types]);
+  const revealCounts = useMemo(
+    () => getNotificationRevealCounts(uniqueTypes.length),
+    [uniqueTypes.length],
+  );
+  const [visibleCount, setVisibleCount] = useState(
+    INITIAL_NOTIFICATION_REVEAL_COUNT,
+  );
   const sectionRef = useRef<HTMLElement>(null);
   const cloudRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<ReturnType<typeof animate> | null>(null);
+  const animatedCountRef = useRef(0);
+  const visibleCountRef = useRef(INITIAL_NOTIFICATION_REVEAL_COUNT);
   const hasTriggeredRef = useRef(false);
 
   const resetBubbles = useCallback(() => {
@@ -204,48 +259,171 @@ function NotificationTypeCloudSection({ types }: { types: string[] }) {
         continue;
       }
 
-      child.style.opacity = "0";
-      child.style.transform =
-        "translate3d(0px, 36px, -180px) rotateX(8deg) rotateY(2deg) scale(0.68)";
-      child.style.filter = "blur(8px)";
+      hideNotificationBubble(child);
     }
+
+    animatedCountRef.current = 0;
   }, []);
 
-  const launchAnimation = useCallback(() => {
+  const revealNotificationCount = useCallback(
+    (
+      requestedCount: number,
+      options: { animateFromCurrent?: boolean } = {},
+    ) => {
+      const cloud = cloudRef.current;
+      const section = sectionRef.current;
+
+      if (!cloud || !section) {
+        return;
+      }
+
+      const bubbles = Array.from(cloud.children).filter(
+        (child): child is HTMLSpanElement => child instanceof HTMLSpanElement,
+      );
+      const nextCount = clampNotificationRevealCount(
+        requestedCount,
+        bubbles.length,
+      );
+      const shouldAnimateFromCurrent = options.animateFromCurrent ?? true;
+      const isPresent = section.classList.contains("present");
+
+      visibleCountRef.current = nextCount;
+      setVisibleCount(nextCount);
+      animationRef.current?.pause();
+
+      if (!isPresent) {
+        return;
+      }
+
+      const previousCount = shouldAnimateFromCurrent
+        ? Math.min(animatedCountRef.current, nextCount)
+        : 0;
+
+      bubbles.forEach((bubble, index) => {
+        if (index < previousCount) {
+          showNotificationBubble(bubble);
+          return;
+        }
+
+        hideNotificationBubble(bubble);
+      });
+
+      const enteringBubbles = bubbles.slice(previousCount, nextCount);
+
+      if (enteringBubbles.length === 0) {
+        animatedCountRef.current = nextCount;
+        return;
+      }
+
+      const isFullReveal = nextCount === bubbles.length;
+      const nextAnimation = animate(enteringBubbles, {
+        autoplay: false,
+        duration: isFullReveal
+          ? CLOUD_FULL_REVEAL_ANIMATION_DURATION
+          : CLOUD_ANIMATION_DURATION,
+        delay: stagger(isFullReveal ? 8 : 80),
+        easing: "out-cubic",
+        opacity: [0, 1],
+        translateY: [36, 0],
+        translateZ: [-180, 0],
+        rotateX: [8, 0],
+        rotateY: [2, 0],
+        scale: [0.68, 1],
+        filter: ["blur(8px)", "blur(0px)"],
+      });
+
+      const hfAnimeHost = window as Window & {
+        __hfAnime?: ReturnType<typeof animate>[];
+      };
+      hfAnimeHost.__hfAnime = hfAnimeHost.__hfAnime || [];
+      hfAnimeHost.__hfAnime.push(nextAnimation);
+
+      animationRef.current = nextAnimation;
+      animationRef.current.pause();
+      animationRef.current.seek(0);
+      animationRef.current.play();
+      animatedCountRef.current = nextCount;
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (!deck || !sectionRef.current) {
+      return;
+    }
+
+    const section = sectionRef.current;
+
+    const getPreviousCount = (count: number) => {
+      const countIndex = revealCounts.indexOf(count);
+
+      return countIndex > 0
+        ? revealCounts[countIndex - 1]
+        : INITIAL_NOTIFICATION_REVEAL_COUNT;
+    };
+
+    const syncCount = (
+      event: RevealEvent,
+      direction: "forward" | "backward",
+    ) => {
+      const fragment = event.fragment;
+
+      if (!fragment || fragment.closest("section") !== section) {
+        return;
+      }
+
+      const nextCount = Number(
+        fragment.getAttribute("data-notification-type-count"),
+      );
+
+      if (!Number.isFinite(nextCount)) {
+        return;
+      }
+
+      revealNotificationCount(
+        direction === "forward" ? nextCount : getPreviousCount(nextCount),
+      );
+    };
+
+    const handleFragmentShown = (event: RevealEvent) => {
+      syncCount(event, "forward");
+    };
+
+    const handleFragmentHidden = (event: RevealEvent) => {
+      syncCount(event, "backward");
+    };
+
+    const handleSlideChanged = (event: RevealEvent) => {
+      if (event.currentSlide !== section || hasTriggeredRef.current) {
+        return;
+      }
+
+      hasTriggeredRef.current = true;
+      revealNotificationCount(INITIAL_NOTIFICATION_REVEAL_COUNT, {
+        animateFromCurrent: false,
+      });
+    };
+
+    deck.on("fragmentshown", handleFragmentShown);
+    deck.on("fragmenthidden", handleFragmentHidden);
+    deck.on("slidechanged", handleSlideChanged);
+
+    return () => {
+      deck.off("fragmentshown", handleFragmentShown);
+      deck.off("fragmenthidden", handleFragmentHidden);
+      deck.off("slidechanged", handleSlideChanged);
+    };
+  }, [deck, revealCounts, revealNotificationCount]);
+
+  useEffect(() => {
     const cloud = cloudRef.current;
 
     if (!cloud) {
       return;
     }
 
-    const bubbles = Array.from(cloud.children).filter(
-      (child): child is HTMLSpanElement => child instanceof HTMLSpanElement,
-    );
-
-    animationRef.current = animate(bubbles, {
-      autoplay: false,
-      duration: CLOUD_ANIMATION_DURATION,
-      delay: 20,
-      easing: "out-cubic",
-      opacity: [0, 1],
-      translateY: [36, 0],
-      translateZ: [-180, 0],
-      rotateX: [8, 0],
-      rotateY: [2, 0],
-      scale: [0.68, 1],
-      filter: ["blur(8px)", "blur(0px)"],
-    });
-
-    const hfAnimeHost = window as Window & {
-      __hfAnime?: ReturnType<typeof animate>[];
-    };
-    hfAnimeHost.__hfAnime = hfAnimeHost.__hfAnime || [];
-    hfAnimeHost.__hfAnime.push(animationRef.current);
-
-    animationRef.current.pause();
-    animationRef.current.seek(0);
-    animationRef.current.play();
-  }, []);
+    resetBubbles();
+  }, [resetBubbles]);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -260,17 +438,18 @@ function NotificationTypeCloudSection({ types }: { types: string[] }) {
       if (!isPresent) {
         hasTriggeredRef.current = false;
         animationRef.current?.pause();
+        visibleCountRef.current = INITIAL_NOTIFICATION_REVEAL_COUNT;
+        setVisibleCount(INITIAL_NOTIFICATION_REVEAL_COUNT);
         return;
       }
 
       if (!hasTriggeredRef.current) {
-        resetBubbles();
         hasTriggeredRef.current = true;
-        launchAnimation();
+        revealNotificationCount(visibleCountRef.current, {
+          animateFromCurrent: false,
+        });
         return;
       }
-
-      resetBubbles();
     };
 
     const observer = new MutationObserver(() => {
@@ -283,25 +462,31 @@ function NotificationTypeCloudSection({ types }: { types: string[] }) {
       observer.disconnect();
       animationRef.current?.pause();
     };
-  }, [launchAnimation, resetBubbles]);
+  }, [revealNotificationCount]);
 
   return (
     <section ref={sectionRef} className={styles.notificationTypeScaleSlide}>
       <div className={styles.notificationTypeForeground}>
-        <h2 className={styles.notificationTypeTitle}>
-          What happens when you have 84 notification type values?
+        <h2 aria-live="polite" className={styles.notificationTypeTitle}>
+          What happens when you have {visibleCount} notification type{" "}
+          {visibleCount === 1 ? "value" : "values"}?
         </h2>
       </div>
       <div ref={cloudRef} className={styles.notificationTypeCloud}>
-        {uniqueTypes.map((type, index) => (
-          <span
-            key={`${type}-${index}`}
-            className={styles.notificationTypeBubble}
-          >
+        {uniqueTypes.map((type) => (
+          <span key={type} className={styles.notificationTypeBubble}>
             {type}
           </span>
         ))}
       </div>
+      {revealCounts.map((count) => (
+        <span
+          key={count}
+          aria-hidden="true"
+          className={`fragment custom ${styles.codeStepFragment}`}
+          data-notification-type-count={count}
+        />
+      ))}
       <aside className="notes">
         <ul>
           <li>And as the application grew, we got more notification types.</li>
@@ -484,10 +669,6 @@ function ProgressiveCodeFrame({
   return (
     <section ref={sectionRef}>
       <div className={styles.progressiveCodeLayout}>
-        <div className={styles.progressiveCodeCopy}>
-          <p className={styles.eyebrow}>V0</p>
-          <h2 className={styles.sectionTitle}>How it started</h2>
-        </div>
         <div
           data-id="event-bus-code-frame"
           className={`${styles.magicMoveFrame} ${styles.staticCodeFrame}`}
@@ -1035,14 +1216,14 @@ export function PresentationDeck({
       mermaid: {
         securityLevel: "strict",
         startOnLoad: false,
-        theme: "dark",
+        theme: "base",
         themeVariables: {
-          darkMode: true,
+          darkMode: false,
           fontFamily: "IBM Plex Mono, SFMono-Regular, Menlo, monospace",
-          lineColor: "#f2a65a",
-          primaryColor: "#1b2a45",
-          primaryTextColor: "#fbf8f2",
-          tertiaryColor: "#0d1933",
+          lineColor: "#0066cc",
+          primaryColor: "#eaf3ff",
+          primaryTextColor: "#000000",
+          tertiaryColor: "#f5f5f7",
         },
       },
       mermaidPlugin: {
@@ -1107,8 +1288,7 @@ export function PresentationDeck({
       <section>
         <div className={styles.introLayout}>
           <div>
-            <p className={styles.eyebrow}>Intro</p>
-            <h2 className={styles.bigIdea}>Hi, I&apos;m Ben.</h2>
+            <h2 className={styles.bigIdea}>Hi, I&apos;m Ben</h2>
             <p className={styles.statement}>
               I&apos;m the founder of Treasure It, a marketplace for P2P
               hyperlocal commerce
@@ -1152,7 +1332,6 @@ export function PresentationDeck({
       <section>
         <div className={styles.marketplaceNotificationLayout}>
           <div>
-            <p className={styles.eyebrow}>Marketplace reality</p>
             <h2 className={styles.bigIdea}>Notifications take center stage</h2>
           </div>
           <Image
@@ -1192,12 +1371,13 @@ export function PresentationDeck({
         </aside>
       </section>
 
-      <section>
-        <p className={styles.eyebrow}>The story begins here</p>
-        <ExternalDocFrame
-          className={styles.storyDocFrame}
-          src="https://docs.expo.dev/versions/latest/sdk/notifications/"
-          title="Expo Notifications docs"
+      <section className={styles.centeredContentSlide}>
+        <Image
+          alt="Expo Notifications documentation page"
+          className={styles.expoDocsImage}
+          priority
+          sizes="86rem"
+          src={expoDocsHomepageImage}
         />
         <aside className="notes">
           <ul>
@@ -1232,7 +1412,16 @@ export function PresentationDeck({
         title=""
       />
 
-      <NotificationTypeCloudSection types={notificationTypes} />
+      <NotificationTypeCloudSection deck={deck} types={notificationTypes} />
+
+      <section className={styles.centeredContentSlide}>
+        <Image
+          alt="iOS Notification Center with multiple app notifications"
+          className={styles.notificationCenterImage}
+          sizes="42rem"
+          src={notificationCenterImage}
+        />
+      </section>
 
       <section className={styles.centerQuestionSlide}>
         <h2 className={`${styles.sectionTitle} ${styles.wideQuestionTitle}`}>
@@ -1248,7 +1437,6 @@ export function PresentationDeck({
       </section>
 
       <section className={styles.centeredContentSlide}>
-        <p className={styles.eyebrow}>Derived notifications</p>
         <MermaidBlock
           chart={`flowchart LR
     A["recipient.switched"] --> B["removed_recipient<br/>old recipient"]
@@ -1286,6 +1474,15 @@ export function PresentationDeck({
           easy for them to just check the in-app notifications tab. Because we
           really don't want our users to miss important notifications
         </aside>
+      </section>
+
+      <section className={styles.centeredContentSlide}>
+        <Image
+          alt="Treasure It in-app notifications inbox"
+          className={styles.notificationCenterImage}
+          sizes="42rem"
+          src={inAppNotificationsImage}
+        />
       </section>
 
       <section className={styles.centeredContentSlide}>
@@ -1337,7 +1534,7 @@ export function PresentationDeck({
       <section className={styles.centeredContentSlide}>
         <div className={styles.preferencesLayout}>
           <h2 className={styles.preferencesTitle}>
-            Don't forget about your users' preferences.
+            Don't forget about your users' preferences
           </h2>
           <Image
             alt="Treasure It notification preferences screen"
@@ -1366,7 +1563,7 @@ export function PresentationDeck({
         <div className={styles.pmAnalyticsLayout}>
           <h2 className={styles.pmAnalyticsTitle}>
             Your product manager needs this in analytics and purchases above $20
-            auto-posted on Slack.
+            auto-posted on Slack
           </h2>
           <Image
             alt="Product manager dog with roadmap notes and notification demands"
@@ -1399,8 +1596,7 @@ export function PresentationDeck({
       <section className={styles.centeredContentSlide}>
         <div className={styles.cornerCryLayout}>
           <div>
-            <p className={styles.eyebrow}>Scale pressure</p>
-            <h2 className={styles.bigIdea}>Go in the corner and cry.</h2>
+            <h2 className={styles.bigIdea}>Go in the corner and cry</h2>
           </div>
           <Image
             alt="Crying reaction to notification scale"
@@ -1428,9 +1624,9 @@ export function PresentationDeck({
     Event --- Analytics[Analytics]
     Event --- Slack[Slack]
 
-    classDef event fill:#fff3e0,color:#111827,stroke:#f2a65a,stroke-width:3px
-    classDef channel fill:#e8f5e8,color:#111827,stroke:#86efac
-    classDef external fill:#fce4ec,color:#111827,stroke:#f9a8d4
+    classDef event fill:#fff3e0,color:#000000,stroke:#0066cc,stroke-width:3px
+    classDef channel fill:#e8f5e8,color:#000000,stroke:#86efac
+    classDef external fill:#fce4ec,color:#000000,stroke:#f9a8d4
 
     class Event event
     class Push,Email,Inbox,Chat channel
@@ -1457,7 +1653,6 @@ export function PresentationDeck({
       </section>
 
       <section>
-        <p className={styles.eyebrow}>I Started thinking about Redux</p>
         <ExternalDocFrame
           className={styles.storyDocFrame}
           src="https://redux.js.org/introduction/why-rtk-is-redux-today#what-does-the-redux-core-do"
@@ -1471,7 +1666,6 @@ export function PresentationDeck({
       </section>
 
       <section>
-        <p className={styles.eyebrow}>Then I started thinking</p>
         <h2 className={styles.reduxDocTitle}>
           What about actions and action creators?
         </h2>
@@ -1497,7 +1691,6 @@ export function PresentationDeck({
       </section>
 
       <section>
-        <p className={styles.eyebrow}>Then the shape</p>
         <h2 className={styles.fsaTitle}>Flux Standard Action</h2>
         <div className={styles.fsaLayout}>
           <div className={styles.fsaExamples}>
@@ -1530,7 +1723,7 @@ export function PresentationDeck({
         </aside>
       </section>
 
-      <section>
+      <section className={styles.domainDrivenDesignSlide}>
         <h2 className={styles.reduxDocTitle}>Domain-Driven Design</h2>
         <Image
           alt="Domain-Driven Design book cover"
@@ -1549,13 +1742,6 @@ export function PresentationDeck({
       <section className={styles.centeredContentSlide}>
         <h2 className={styles.eventEmitterTitle}>EventEmitter3</h2>
         <div className={styles.eventEmitterLayout}>
-          <div>
-            <ul className={styles.eventEmitterList}>
-              <li>Emit product events by name.</li>
-              <li>Subscribe side effects outside the product flow.</li>
-              <li>Keep the bus local, typed, and boring.</li>
-            </ul>
-          </div>
           <pre className={styles.eventEmitterCode}>
             <code className="language-js">{`
 
@@ -1738,11 +1924,11 @@ eventBus.emit("item.bid.received", payload);`}</code>
     Push --> Expo[Expo push API]
     Email --> Provider[Email provider]
 
-    classDef userLayer fill:#e1f5fe,color:#111827,stroke:#7dd3fc
-    classDef eventLayer fill:#fff3e0,color:#111827,stroke:#f2a65a
-    classDef notifyLayer fill:#e8f5e8,color:#111827,stroke:#86efac
-    classDef storageLayer fill:#f1f8e9,color:#111827,stroke:#bef264
-    classDef extLayer fill:#fce4ec,color:#111827,stroke:#f9a8d4
+    classDef userLayer fill:#e1f5fe,color:#000000,stroke:#7dd3fc
+    classDef eventLayer fill:#fff3e0,color:#000000,stroke:#0066cc
+    classDef notifyLayer fill:#e8f5e8,color:#000000,stroke:#86efac
+    classDef storageLayer fill:#f1f8e9,color:#000000,stroke:#bef264
+    classDef extLayer fill:#fce4ec,color:#000000,stroke:#f9a8d4
 
     class Service userLayer
     class EventBus,Handler eventLayer
@@ -1857,11 +2043,11 @@ eventBus.emit("item.bid.received", payload);`}</code>
     Prefs -- no --> Skip[Skip + log]
     Unified --> Ledger[Ledger<br/>in-app history]
 
-    classDef product fill:#e1f5fe,color:#111827,stroke:#7dd3fc
-    classDef event fill:#fff3e0,color:#111827,stroke:#f2a65a
-    classDef policy fill:#e8f5e8,color:#111827,stroke:#86efac
-    classDef delivery fill:#fce4ec,color:#111827,stroke:#f9a8d4
-    classDef storage fill:#f1f8e9,color:#111827,stroke:#bef264
+    classDef product fill:#e1f5fe,color:#000000,stroke:#7dd3fc
+    classDef event fill:#fff3e0,color:#000000,stroke:#0066cc
+    classDef policy fill:#e8f5e8,color:#000000,stroke:#86efac
+    classDef delivery fill:#fce4ec,color:#000000,stroke:#f9a8d4
+    classDef storage fill:#f1f8e9,color:#000000,stroke:#bef264
 
     class Action,Service product
     class Event,Bus,Type event
@@ -1938,11 +2124,11 @@ eventBus.emit("item.bid.received", payload);`}</code>
     Handler --> Service((Service<br/>with DI))
     Service --> User
 
-    classDef user fill:#e1f5fe,color:#111827,stroke:#7dd3fc,stroke-width:3px
-    classDef business fill:#fef3c7,color:#111827,stroke:#fbbf24,stroke-width:3px
-    classDef event fill:#fff3e0,color:#111827,stroke:#f2a65a,stroke-width:3px
-    classDef handler fill:#f3e8ff,color:#111827,stroke:#c084fc,stroke-width:3px
-    classDef service fill:#e8f5e8,color:#111827,stroke:#86efac,stroke-width:3px
+    classDef user fill:#e1f5fe,color:#000000,stroke:#7dd3fc,stroke-width:3px
+    classDef business fill:#fef3c7,color:#000000,stroke:#fbbf24,stroke-width:3px
+    classDef event fill:#fff3e0,color:#000000,stroke:#0066cc,stroke-width:3px
+    classDef handler fill:#f3e8ff,color:#000000,stroke:#c084fc,stroke-width:3px
+    classDef service fill:#e8f5e8,color:#000000,stroke:#86efac,stroke-width:3px
 
     class User user
     class BusinessLogic business
