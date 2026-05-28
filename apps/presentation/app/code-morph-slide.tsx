@@ -24,6 +24,14 @@ const stepMessages = [
   "Emit one rich event instead and let handlers own push, email, inbox, chat, and navigation side effects.",
 ];
 
+const codeMorphOptions = {
+  animateContainer: false,
+  containerStyle: false,
+  duration: 750,
+  lineNumbers: false,
+  stagger: 3,
+};
+
 export function CodeMorphSlide({
   deck,
   frameDataId,
@@ -115,11 +123,7 @@ export function CodeMorphSlide({
           steps={steps}
           step={step}
           animate
-          options={{
-            duration: 700,
-            lineNumbers: true,
-            stagger: 0.18,
-          }}
+          options={codeMorphOptions}
         />
       ) : (
         <div className={styles.magicMovePlaceholder} />

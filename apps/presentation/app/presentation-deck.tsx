@@ -70,6 +70,14 @@ type MermaidRevealConfig = RevealConfig &
 
 type DeckPlugin = RevealPlugin | RevealPluginFactory;
 
+const codeMorphOptions = {
+  animateContainer: false,
+  containerStyle: false,
+  duration: 750,
+  lineNumbers: false,
+  stagger: 3,
+};
+
 function MermaidBlock({
   chart,
   className = "",
@@ -489,11 +497,7 @@ function ProgressiveCodeFrame({
               steps={steps}
               step={step}
               animate
-              options={{
-                duration: 450,
-                lineNumbers: true,
-                stagger: 0.1,
-              }}
+              options={codeMorphOptions}
             />
           ) : (
             <div className={styles.magicMovePlaceholder} />
@@ -687,11 +691,7 @@ function EventBusTeachingMorphSlide({
               steps={steps}
               step={step}
               animate
-              options={{
-                duration: 650,
-                lineNumbers: true,
-                stagger: 0.16,
-              }}
+              options={codeMorphOptions}
             />
           ) : (
             <div className={styles.magicMovePlaceholder} />
@@ -807,11 +807,7 @@ function PayloadSchemaMorphSlide({ steps }: { steps: KeyedTokensInfo[] }) {
               steps={steps}
               step={step}
               animate
-              options={{
-                duration: 650,
-                lineNumbers: true,
-                stagger: 0.16,
-              }}
+              options={codeMorphOptions}
             />
           ) : (
             <div className={styles.magicMovePlaceholder} />
@@ -829,8 +825,8 @@ function PayloadSchemaMorphSlide({ steps }: { steps: KeyedTokensInfo[] }) {
           </li>
           <li>
             And then the final piece of the puzzle here, the contract of the
-            payload that we're sending, is just another thought schema at the end
-            of the day.
+            payload that we're sending, is just another thought schema at the
+            end of the day.
           </li>
         </ul>
       </aside>
@@ -928,11 +924,7 @@ function PreferenceGateMorphSlide({
               steps={steps}
               step={step}
               animate
-              options={{
-                duration: 650,
-                lineNumbers: true,
-                stagger: 0.14,
-              }}
+              options={codeMorphOptions}
             />
           ) : (
             <div className={styles.magicMovePlaceholder} />
@@ -949,7 +941,9 @@ function PreferenceGateMorphSlide({
       ))}
       <aside className="notes">
         <ul>
-          <li>(morph1) The service fires the event after the action is taken.</li>
+          <li>
+            (morph1) The service fires the event after the action is taken.
+          </li>
           <li>
             (morph2) The event handler passes the payload into the notification
             template.
@@ -959,9 +953,7 @@ function PreferenceGateMorphSlide({
             this notification type, in this channel, and optionally for this
             group.
           </li>
-          <li>
-            The template builds the push and email payloads.
-          </li>
+          <li>The template builds the push and email payloads.</li>
         </ul>
       </aside>
     </section>
@@ -1405,6 +1397,24 @@ export function PresentationDeck({
       </section>
 
       <section className={styles.centeredContentSlide}>
+        <div className={styles.cornerCryLayout}>
+          <div>
+            <p className={styles.eyebrow}>Scale pressure</p>
+            <h2 className={styles.bigIdea}>Go in the corner and cry.</h2>
+          </div>
+          <Image
+            alt="Crying reaction to notification scale"
+            className={styles.cornerCryImage}
+            sizes="30rem"
+            src={cryingImage}
+          />
+        </div>
+        <aside className="notes">
+          Go to the corner and start crying. And in that moment of panic and
+          desperation, the first thing you start to think of is of course.....
+        </aside>
+      </section>
+      <section className={styles.centeredContentSlide}>
         <div className={styles.eventOrbitDiagramLayout}>
           <h2 className={styles.eventOrbitDiagramTitle}>
             Put the event in the center
@@ -1443,25 +1453,6 @@ export function PresentationDeck({
               updating 84 different places.
             </li>
           </ul>
-        </aside>
-      </section>
-
-      <section className={styles.centeredContentSlide}>
-        <div className={styles.cornerCryLayout}>
-          <div>
-            <p className={styles.eyebrow}>Scale pressure</p>
-            <h2 className={styles.bigIdea}>Go in the corner and cry.</h2>
-          </div>
-          <Image
-            alt="Crying reaction to notification scale"
-            className={styles.cornerCryImage}
-            sizes="30rem"
-            src={cryingImage}
-          />
-        </div>
-        <aside className="notes">
-          Go to the corner and start crying. And in that moment of panic and
-          desperation, the first thing you start to think of is of course.....
         </aside>
       </section>
 
@@ -1559,9 +1550,6 @@ export function PresentationDeck({
         <h2 className={styles.eventEmitterTitle}>EventEmitter3</h2>
         <div className={styles.eventEmitterLayout}>
           <div>
-            <p className={styles.eventEmitterStatement}>
-              A small, fast EventEmitter became the in-process event bus.
-            </p>
             <ul className={styles.eventEmitterList}>
               <li>Emit product events by name.</li>
               <li>Subscribe side effects outside the product flow.</li>
@@ -1569,13 +1557,16 @@ export function PresentationDeck({
             </ul>
           </div>
           <pre className={styles.eventEmitterCode}>
-            <code className="language-js">{`import EventEmitter from "eventemitter3";
+            <code className="language-js">{`
+
 
 const eventBus = new EventEmitter();
+
 
 eventBus.on("item.bid.received", notifySeller);
 eventBus.on("item.bid.received", mirrorIntoChat);
 eventBus.on("item.bid.received", trackAnalytics);
+
 
 eventBus.emit("item.bid.received", payload);`}</code>
           </pre>
@@ -1883,9 +1874,7 @@ eventBus.emit("item.bid.received", payload);`}</code>
         <aside className="notes">
           <ul>
             <li>This is the whole thing at a high level.</li>
-            <li>
-              The product service owns the fact that interest was shown.
-            </li>
+            <li>The product service owns the fact that interest was shown.</li>
             <li>The domain event is item.interest_added.</li>
             <li>
               The notification type is interest_shown, which is the template and
@@ -1924,8 +1913,8 @@ eventBus.emit("item.bid.received", payload);`}</code>
             </li>
             <li>The service only needs a method it can call.</li>
             <li>
-              That keeps channel implementation details outside the orchestration
-              code.
+              That keeps channel implementation details outside the
+              orchestration code.
             </li>
           </ul>
         </aside>
