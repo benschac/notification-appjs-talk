@@ -41,7 +41,7 @@ import reduxActionCreatorsDocsImage from "./redux_generate_creators.png";
 import reduxCoreDocsImage from "./redux_core_screen_shot.png";
 import saltBaeTypescriptImage from "./saltbaets.jpeg";
 import standardActionImage from "./standard_action.png";
-import systemDiagramImage from "./system_DI.png";
+import systemDiagramImage from "./system_DI_cropped.png";
 import treasureBagImage from "./Longarms.png";
 import vennDiagramImage from "./vendiagram.png";
 import zodScreenshotImage from "./zod_screen_shot.png";

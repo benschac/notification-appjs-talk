@@ -518,7 +518,6 @@
   width: min(100%, 128rem);
   display: grid;
   justify-items: center;
-  overflow: hidden;
 }
 
 .solutionDiagramImage {
@@ -527,8 +526,6 @@
   height: auto;
   max-height: min(92vh, 62rem);
   object-fit: contain;
-  transform: scale(1.18);
-  transform-origin: center;
 }
 
 .solutionDiagramTitle {
