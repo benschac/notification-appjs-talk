@@ -338,16 +338,6 @@
   justify-items: center;
 }
 
-.eventOrbitDiagramTitle {
-  max-width: 18ch;
-  margin: 0;
-  color: #000;
-  font-size: clamp(2.4rem, 4.8vw, 4.6rem);
-  line-height: 0.96;
-  text-align: center;
-  text-wrap: balance;
-}
-
 .eventOrbitMermaidDiagram {
   width: min(100%, 84rem);
   margin: 0;
@@ -524,25 +514,21 @@
   margin: 0 auto;
 }
 
-.solutionMermaidDiagram {
-  display: grid;
-  width: min(100%, 112rem);
-  height: min(84vh, 58rem);
-  margin: 0;
-  padding: 0.75rem;
-  place-items: center;
-}
-
-.solutionMermaidDiagram svg {
-  width: 100%;
-  height: 100%;
-  max-height: none;
-}
-
 .solutionDiagramLayout {
-  width: min(100%, 114rem);
+  width: min(100%, 128rem);
   display: grid;
   justify-items: center;
+  overflow: hidden;
+}
+
+.solutionDiagramImage {
+  display: block;
+  width: min(100%, 124rem);
+  height: auto;
+  max-height: min(92vh, 62rem);
+  object-fit: contain;
+  transform: scale(1.18);
+  transform-origin: center;
 }
 
 .solutionDiagramTitle {
@@ -562,13 +548,21 @@
 }
 
 .notificationLifecycleDiagram {
-  width: min(100%, 96rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(100%, 108rem);
+  height: min(76vh, 48rem);
   margin: 0;
-  padding: 0.85rem;
+  padding: 0;
 }
 
 .notificationLifecycleDiagram svg {
-  max-height: 68vh;
+  width: 136%;
+  max-width: none;
+  max-height: none;
+  transform: scale(1.08);
+  transform-origin: center;
 }
 
 .providerInjectionLayout {
@@ -602,6 +596,7 @@
   gap: 1.25rem;
   justify-items: center;
   width: min(100%, 88rem);
+  transform: translateY(2.5rem);
 }
 
 .notificationLoopTitle {
@@ -616,7 +611,7 @@
 .notificationLoopDiagram {
   width: min(100%, 82rem);
   margin: 0;
-  padding: 1.4rem;
+  padding: 1.1rem 1.4rem;
 }
 
 .notificationLoopDiagram svg {
@@ -773,8 +768,8 @@
 
 .magicMoveFrame.payloadSchemaCode pre {
   padding-bottom: 1.2rem;
-  font-size: clamp(0.6rem, 0.82vw, 0.8rem);
-  line-height: 1.12;
+  font-size: clamp(1rem, 1.35vw, 1.35rem);
+  line-height: 1.18;
 }
 
 .eventBusTeachingCaption {
@@ -917,9 +912,9 @@
 
 .standardActionImage {
   display: block;
-  width: min(100%, 104rem);
+  width: min(100%, 118rem);
   height: auto;
-  max-height: 88vh;
+  max-height: 94vh;
   margin: 0 auto;
   border-radius: 0.75rem;
   object-fit: contain;
@@ -957,6 +952,18 @@
   width: min(100%, 86rem);
   height: auto;
   max-height: min(78vh, 48rem);
+  margin: 0 auto;
+  border: 1px solid rgba(26, 26, 26, 0.12);
+  border-radius: 1rem;
+  box-shadow: 0 28px 90px rgba(26, 26, 26, 0.14);
+  object-fit: contain;
+}
+
+.docScreenshotImage {
+  display: block;
+  width: min(100%, 82rem);
+  height: auto;
+  max-height: min(76vh, 46rem);
   margin: 0 auto;
   border: 1px solid rgba(26, 26, 26, 0.12);
   border-radius: 1rem;
@@ -1123,9 +1130,14 @@
   text-wrap: balance;
 }
 
-.oversizedMetric {
+:global(.reveal) .oversizedMetric {
+  max-width: 14ch;
+  margin: 0;
+  color: #000;
   font-size: clamp(10.4rem, 22vw, 24rem);
   line-height: 0.8;
+  text-align: center;
+  text-wrap: balance;
 }
 
 .externalDocHeader {
@@ -1376,6 +1388,7 @@
   width: min(100%, 96rem);
   min-height: min(66vh, 42rem);
   margin: 0 auto;
+  transform: translateY(1rem);
 }
 
 .staticCodeFrame {

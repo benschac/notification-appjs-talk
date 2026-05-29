@@ -217,6 +217,7 @@ const notificationServiceSteps = [
 ];
 
 const preferenceGateSteps = [
+  `setupNotificationHandlers(notificationServiceSingleton);`,
   `createEventHandler(
   DOMAIN_EVENTS.ITEM.BID_RECEIVED,
   async (payload) => {
@@ -257,18 +258,6 @@ const preferenceGateSteps = [
     { groupId: options.groupId }
   );
 }`,
-  `const preferences =
-  parseNotificationPreferences(profile.notification_preferences) ??
-  getDefaultNotificationPreferences();
-
-return {
-  email:
-    preferences.email.enabled &&
-    (preferences.email.types[notificationType] ?? true),
-  push:
-    preferences.push.enabled &&
-    (preferences.push.types[notificationType] ?? true),
-};`,
   `async send(userId, notificationType, payload, groupId) {
   const prefs = await this.userPreferences.getNotificationPreferences(
     userId,
@@ -334,7 +323,7 @@ export type DomainEvents = {
 });`,
 ];
 
-const sendPushPreferenceStep = `async sendPush(
+const sendPushPreferenceStep = `async send(
   userId: string,
   notificationType: NotificationTypeKey,
   payload: Parameters<PushNotificationService['sendToUser']>[0]['payload'],

@@ -28,18 +28,23 @@ import headshotImage from "./headshot.jpeg";
 import inAppNotificationsImage from "./inapp_notifs.png";
 import mirroredChatImage from "./mirrored_chat.jpeg";
 import moosePmImage from "./moose_pm.png";
-import notificationCenterImage from "./notifs_phone_screen.jpeg";
+import notificationCenterImage from "./notif_appjs_screen_shot.jpeg";
 import jebThankYouImage from "./jeb.gif";
 import notificationServiceProvidersImage from "./legos2.png";
 import notificationIllustration from "./notif_illistration.png";
 import notificationOffImage from "./notif_off.png";
+import parseDontValidateImage from "./parse_dont_validate.png";
 import knockLogoImage from "./knocklogo.png";
 import oneSignalLogoImage from "./onesignal.png";
 import preferencesImage from "./preferences.png";
+import reduxActionCreatorsDocsImage from "./redux_generate_creators.png";
+import reduxCoreDocsImage from "./redux_core_screen_shot.png";
 import saltBaeTypescriptImage from "./saltbaets.jpeg";
 import standardActionImage from "./standard_action.png";
+import systemDiagramImage from "./system_DI.png";
 import treasureBagImage from "./Longarms.png";
 import vennDiagramImage from "./vendiagram.png";
+import zodScreenshotImage from "./zod_screen_shot.png";
 import styles from "../styles/deck.module.css";
 
 type TalkSnapshot = {
@@ -767,16 +772,16 @@ function StaticHighlightedCodeBlock({
 }
 
 const eventBusTeachingMessages = [
-  "A domain event constant gives the product event a stable string name.",
-  "That domain event name becomes the key in the schema registry.",
-  "That registry becomes the source of truth for the TypeScript payload map.",
-  "The event name selects the payload type at compile time, then the same schema validates it at runtime.",
+  "",
+  "That domain event name becomes the key in the schema object",
+  "That object becomes the source of truth for the TypeScript payload map",
+  "The event name keys the payload, then the same schema validates it at runtime + buildtime",
 ];
 
 const preferenceGateMessages = [
+  "Register the notification handlers once",
   "The handler forwards the typed event payload to the notification template path.",
   "Resolve the notification payload, renders the template, and hands channels to the unified service.",
-  "The preference service collapses global, notification-types into email/push booleans.",
   "Each channel asks the injected preference service before touching Expo or email.",
 ];
 
@@ -1202,6 +1207,7 @@ export function PresentationDeck({
 
   const revealConfig = useMemo<MermaidRevealConfig>(
     () => ({
+      controls: false,
       controlsLayout: "edges",
       hash: true,
       keyboard: true,
@@ -1251,7 +1257,7 @@ export function PresentationDeck({
         },
       ],
       progress: true,
-      slideNumber: "c/t",
+      slideNumber: false,
       transition: "fade",
       viewDistance: 3,
     }),
@@ -1404,16 +1410,16 @@ export function PresentationDeck({
       <NotificationTypeCloudSection deck={deck} types={notificationTypes} />
 
       <section className={styles.centeredContentSlide}>
-        <h2
+        <h1
           className={`${styles.fullWidthPunchline} ${styles.oversizedMetric}`}
         >
           672
-        </h2>
+        </h1>
       </section>
 
       <section className={styles.centeredContentSlide}>
         <Image
-          alt="iOS Notification Center with multiple app notifications"
+          alt="iOS Notification Center with App.js Conf notification"
           className={styles.notificationCenterImage}
           sizes="42rem"
           src={notificationCenterImage}
@@ -1620,12 +1626,9 @@ export function PresentationDeck({
       </section>
       <section className={styles.centeredContentSlide}>
         <div className={styles.eventOrbitDiagramLayout}>
-          <h2 className={styles.eventOrbitDiagramTitle}>
-            Put the event in the center
-          </h2>
           <MermaidBlock
             chart={`flowchart LR
-    Push[Push] --- Event((Domain event))
+    Push[Push] --- Event((??))
     Email[Email] --- Event
     Chat[Chat] --- Event
     Event --- Inbox[In-app]
@@ -1660,11 +1663,12 @@ export function PresentationDeck({
         </aside>
       </section>
 
-      <section>
-        <ExternalDocFrame
-          className={styles.storyDocFrame}
-          src="https://redux.js.org/introduction/why-rtk-is-redux-today#what-does-the-redux-core-do"
-          title="Redux core docs"
+      <section className={styles.centeredContentSlide}>
+        <Image
+          alt="Redux core docs explaining what the Redux core does"
+          className={styles.docScreenshotImage}
+          sizes="82rem"
+          src={reduxCoreDocsImage}
         />
         <aside className="notes">
           Redux! That's it, that's the solution. That's how we're solving all of
@@ -1673,14 +1677,12 @@ export function PresentationDeck({
         </aside>
       </section>
 
-      <section>
-        <h2 className={styles.reduxDocTitle}>
-          What about actions and action creators?
-        </h2>
-        <ExternalDocFrame
-          className={styles.reduxDocFrame}
-          src="https://redux.js.org/usage/reducing-boilerplate#generating-action-creators"
-          title="Redux action creators docs"
+      <section className={styles.centeredContentSlide}>
+        <Image
+          alt="Redux docs showing generating action creators"
+          className={styles.docScreenshotImage}
+          sizes="82rem"
+          src={reduxActionCreatorsDocsImage}
         />
         <aside className="notes">
           <ul>
@@ -1780,13 +1782,12 @@ eventBus.emit("item.bid.received", payload);`}</code>
         </aside>
       </section>
 
-      <section>
-        <p className={styles.eyebrow}>Then the guarantee</p>
-        <h2 className={styles.reduxDocTitle}>Type-Driven Design</h2>
-        <ExternalDocFrame
-          className={styles.storyDocFrame}
-          src="https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/"
-          title="Parse, don't validate"
+      <section className={styles.centeredContentSlide}>
+        <Image
+          alt="Parse, don't validate article introducing type-driven design"
+          className={styles.docScreenshotImage}
+          sizes="82rem"
+          src={parseDontValidateImage}
         />
         <aside className="notes">
           <ul>
@@ -1807,13 +1808,12 @@ eventBus.emit("item.bid.received", payload);`}</code>
         </aside>
       </section>
 
-      <section>
-        <p className={styles.eyebrow}>And a schema</p>
-        <h2 className={styles.reduxDocTitle}>Parse don't validate</h2>
-        <ExternalDocFrame
-          className={styles.storyDocFrame}
-          src="https://zod.dev/basics?id=parsing-data#parsing-data"
-          title="Zod docs"
+      <section className={styles.centeredContentSlide}>
+        <Image
+          alt="Zod docs showing parsing data with .parse"
+          className={styles.docScreenshotImage}
+          sizes="82rem"
+          src={zodScreenshotImage}
         />
         <aside className="notes">
           <ul>
@@ -1857,7 +1857,7 @@ eventBus.emit("item.bid.received", payload);`}</code>
       </section>
 
       <section className={styles.centeredContentSlide}>
-        <h2 className={styles.fullWidthPunchline}>Just steal their ideas.</h2>
+        <h2 className={styles.fullWidthPunchline}>Just steal their ideas</h2>
         <aside className="notes">
           These ideas are great, and if I'm not going to steal them, someone
           else will.
@@ -1907,40 +1907,11 @@ eventBus.emit("item.bid.received", payload);`}</code>
 
       <section className={styles.centeredContentSlide}>
         <div className={styles.solutionDiagramLayout}>
-          <MermaidBlock
-            chart={`graph TB
-    Service[Domain service] --> EventBus[Typed Event Bus]
-    EventBus --> Handler[Notification handler]
-
-    Handler --> Unified[Unified notification service]
-    Unified --> Prefs[Preference and group checks]
-    Prefs --> Push[Push delivery]
-    Prefs --> Email[Email queue with fallback]
-
-    Unified --> Ledger[Notification ledger]
-    Ledger --> Inbox[In-app inbox reads]
-
-    Handler --> ChatMirror[Chat mirror path]
-    ChatMirror --> Timeline[ChatTimelineService.addSystemMessage]
-
-    Handler --> Analytics[Analytics event]
-    Handler --> Slack[Slack webhook]
-
-    Push --> Expo[Expo push API]
-    Email --> Provider[Email provider]
-
-    classDef userLayer fill:#e1f5fe,color:#000000,stroke:#7dd3fc
-    classDef eventLayer fill:#fff3e0,color:#000000,stroke:#0066cc
-    classDef notifyLayer fill:#e8f5e8,color:#000000,stroke:#86efac
-    classDef storageLayer fill:#f1f8e9,color:#000000,stroke:#bef264
-    classDef extLayer fill:#fce4ec,color:#000000,stroke:#f9a8d4
-
-    class Service userLayer
-    class EventBus,Handler eventLayer
-    class Unified,Prefs,Push,Email,ChatMirror,Timeline,Analytics,Slack notifyLayer
-    class Ledger,Inbox storageLayer
-    class Expo,Provider extLayer`}
-            className={styles.solutionMermaidDiagram}
+          <Image
+            alt="Notification system architecture diagram"
+            className={styles.solutionDiagramImage}
+            sizes="124rem"
+            src={systemDiagramImage}
           />
         </div>
         <aside className="notes">
@@ -1975,7 +1946,7 @@ eventBus.emit("item.bid.received", payload);`}</code>
         <div>
           <p className={styles.statement}>
             The event name owns the payload shape, the runtime validation, and
-            the TypeScript type every subscriber sees.
+            the TypeScript type every subscriber uses
           </p>
         </div>
         <aside className="notes">
@@ -1989,7 +1960,7 @@ eventBus.emit("item.bid.received", payload);`}</code>
           alt="Standard action code showing commerce activation buyer match credit request"
           className={styles.standardActionImage}
           priority
-          sizes="104rem"
+          sizes="118rem"
           src={standardActionImage}
         />
         <aside className="notes">The type inference.</aside>
